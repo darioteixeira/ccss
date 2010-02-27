@@ -1,0 +1,60 @@
+=========================================================================
+| README for CCSS 0.1							|
+|									|
+| Dario Teixeira (dario.teixeira@yahoo.com)				|
+| March 2010								|
+=========================================================================
+
+1. Overview
+===========
+
+CCSS is a preprocessor/pretty-printer for CSS (Cascading Style Sheets).
+It extends the CSS language with support for basic arithmetic operations
+(addition, subtraction, multiplication, division) in expressions.  The
+programme reads the CSS source from stdin and outputs its result on stdout.
+As an example, given the following input:
+
+  h1
+	{
+	width: 2 * (10em + 5em);
+	}
+
+CCSS will produce the following output:
+
+  h1
+	{
+	width: 30em;
+	}
+
+Moreover, CCSS performs a basic dimensionality analysis of each operation,
+ensuring the result is consistent.
+
+
+2. Dependencies
+===============
+
+Menhir is used as the parser generator [1], while scanning is done with Ulex [2].
+Another requirement is Pcre-ocaml [3].
+
+
+3. Building and installing
+==========================
+
+The build system relies on Ocamlbuild.  Enter 'make' in the 'src' directory
+for building the bytecode and native binaries.
+
+
+4. License
+==========
+
+CCSS is distributed under the terms of the GNU GPL version 2.
+See LICENSE file for full license text.
+
+
+References
+==========
+
+[1] http://cristal.inria.fr/~fpottier/menhir/
+[2] http://www.cduce.org/download.html
+[3] http://www.ocaml.info/home/ocaml_sources.html#pcre-ocaml
+

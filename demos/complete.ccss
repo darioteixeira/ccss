@@ -1,0 +1,43 @@
+/********************************************************************************/
+/* Complete test of CCSS.  Note that the CSS herein contained is nonsensical,	*/
+/* and is aimed solely at testing various features of the CSS lexer/parser.	*/
+/********************************************************************************/
+
+@import "foo";
+@import "foo" print, screen;
+@import uri("bar");
+@import uri("bar") print, screen;
+
+@media print, screen
+	{
+	h1 {color: black;}
+	}
+
+@page {margin: 1em;}
+@page :left {margin: 1em;}
+
+@font-face {font-family: serif;}
+
+h1
+	{
+	color: black;
+	background: #fff;
+	border: 1px solid black;
+	font-family: "Arial";
+	}
+
+#main h1.section > p ~ span + span {color: red;}
+
+#main h1[class] {color: red;}
+
+#main h1[class^="section"] {color: red;}
+
+h1 {width: 10em + 20em;}		// Should equal 30em
+h1 {width: (10em + 20em) / 2;}		// Should equal 15em
+h1 {width: (30em - 0.5em) * 2;}		// Should equal 59em
+h1 {width: 1em + (30em - 0.5em) * 2;}	// Should equal 60em
+h1 {width: 1em + 2em + 0.5em * 2;}	// Should equal 4em
+h1 {width: 20em / 2;}			// Should equal 10em
+h1 {width: 5em * 2;}			// Should equal 10em
+h1 {width: 2 * 5em;}			// Should equal 10em
+
