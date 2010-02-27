@@ -112,10 +112,10 @@ and term_t =
 
 and calc_t =
 	[ `Quantity of quantity_t
-	| `Sum of calc_t * calc_t
-	| `Sub of calc_t * calc_t
-	| `Mul of calc_t * calc_t
-	| `Div of calc_t * calc_t
+	| `Sum of Lexing.position * calc_t * calc_t
+	| `Sub of Lexing.position * calc_t * calc_t
+	| `Mul of Lexing.position * calc_t * calc_t
+	| `Div of Lexing.position * calc_t * calc_t
 	]
 
 and quantity_t = Num.num * string option

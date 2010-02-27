@@ -8,6 +8,11 @@
 
 open Parser
 
+
+(********************************************************************************)
+(**	{1 Regular expressions}							*)
+(********************************************************************************)
+
 let regexp alpha = ['a'-'z']
 let regexp digit = ['0'-'9']
 let regexp hexa = ['0'-'9' 'a'-'f']
@@ -19,6 +24,14 @@ let regexp units = alpha+ | '%'
 let regexp slc = "//" [^ '\n']+
 let regexp nth = [^ ')']+ ')'
 
+
+(********************************************************************************)
+(**	{1 Functions and values}						*)
+(********************************************************************************)
+
+(********************************************************************************)
+(**	{2 Auxiliary functions}							*)
+(********************************************************************************)
 
 let trim_lexbuf ?(left = 0) ?(right = 0) lexbuf =
 	Ulexing.utf8_sub_lexeme lexbuf left ((Ulexing.lexeme_length lexbuf) - left - right)
@@ -45,6 +58,10 @@ let parse_quantity =
 		in (number, units)
 
 
+(********************************************************************************)
+(**	{2 Lexers}								*)
+(********************************************************************************)
+
 let rec main_scanner = lexer
 	| "uri("			-> URI
 	| ident '('			-> TERM_FUNC (rtrim_lexbuf lexbuf)
@@ -61,7 +78,7 @@ let rec main_scanner = lexer
 	| "@media" space+		-> MEDIA
 	| "@page" space+		-> PAGE
 	| "@font-face" space+		-> FONTFACE
-	| "/*"				-> comment_scanner lexbuf
+	| space* "/*"			-> comment_scanner lexbuf
 	| space* slc space*		-> main_scanner lexbuf
 	| "="				-> ATTR_EQUALS
 	| "~="				-> ATTR_INCLUDES
@@ -106,6 +123,6 @@ and double_string_scanner accum = lexer
 
 
 and comment_scanner = lexer
-	| "*/"				-> main_scanner lexbuf
+	| "*/" space*			-> main_scanner lexbuf
 	| _				-> comment_scanner lexbuf
 

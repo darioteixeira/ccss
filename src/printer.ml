@@ -8,8 +8,21 @@
 
 open Printf
 
-exception Bad_units
 
+(********************************************************************************)
+(**	{1 Exceptions}								*)
+(********************************************************************************)
+
+exception Bad_units of string * Lexing.position
+
+
+(********************************************************************************)
+(**	{1 Functions and values}						*)
+(********************************************************************************)
+
+(********************************************************************************)
+(**	{2 Auxiliary functions}							*)
+(********************************************************************************)
 
 let sprint_list ?(termin = "") ?(sep = termin) f xs =
 	let rec concat = function
@@ -18,6 +31,24 @@ let sprint_list ?(termin = "") ?(sep = termin) f xs =
 		| hd :: tl -> hd ^ sep ^ (concat tl)
 	in concat (List.map f xs)
 
+
+let func_of_op = function
+	| `Addition	  -> Num.add_num
+	| `Subtraction	  -> Num.sub_num
+	| `Multiplication -> Num.mult_num
+	| `Division	  -> Num.div_num
+
+
+let string_of_op = function
+	| `Addition	  -> "addition"
+	| `Subtraction	  -> "subtraction"
+	| `Multiplication -> "multiplication"
+	| `Division	  -> "division"
+
+
+(********************************************************************************)
+(**	{2 Main printing functions}						*)
+(********************************************************************************)
 
 let sprint stylesheet =
 
@@ -118,20 +149,23 @@ let sprint stylesheet =
 
 	and expand_calc = function
 		| `Quantity (num, units) -> (num, units)
-		| `Sum (c1, c2)		 -> perform_calc Num.add_num false c1 c2
-		| `Sub (c1, c2)		 -> perform_calc Num.sub_num false c1 c2
-		| `Mul (c1, c2)		 -> perform_calc Num.mult_num true c1 c2
-		| `Div (c1, c2)		 -> perform_calc Num.div_num true c1 c2
+		| `Sum (pos, c1, c2)	 -> perform_calc `Addition pos c1 c2
+		| `Sub (pos, c1, c2)	 -> perform_calc `Subtraction pos c1 c2
+		| `Mul (pos, c1, c2)	 -> perform_calc `Multiplication pos c1 c2
+		| `Div (pos, c1, c2)	 -> perform_calc `Division pos c1 c2
 
-	and perform_calc op allow_scaling x y =
-		let (num1, units1) = (expand_calc x)
+	and perform_calc op pos x y =
+		let func = func_of_op op
+		and (num1, units1) = (expand_calc x)
 		and (num2, units2) = (expand_calc y) in
-		let units = match (units1, units2) with
-			| (u1, u2) when u1 = u2		    -> units1
-			| (Some u, None) when allow_scaling -> Some u
-			| (None, Some u) when allow_scaling -> Some u
-			| _				    -> raise Bad_units
-		in (op num1 num2, units)
+		let units = match (op, units1, units2) with
+			| (`Addition, u1, u2) when u1 = u2    -> u1
+			| (`Subtraction, u1, u2) when u1 = u2 -> u1
+			| (`Multiplication, None, u2)	      -> u2
+			| (`Multiplication, u1, None)	      -> u1
+			| (`Division, u1, None)		      -> u1
+			| _				      -> raise (Bad_units (string_of_op op, pos))
+		in (func num1 num2, units)
 
 	in sprint_stylesheet stylesheet
 

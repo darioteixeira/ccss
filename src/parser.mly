@@ -172,9 +172,9 @@ term:
 
 calc:
 	| QUANTITY							{`Quantity $1}
-	| calc ASTERISK calc						{`Mul ($1, $3)}
-	| calc SLASH calc						{`Div ($1, $3)}
-	| calc PLUS calc						{`Sum ($1, $3)}
-	| calc MINUS calc						{`Sub ($1, $3)}
+	| calc ASTERISK calc						{`Mul ($startpos($2), $1, $3)}
+	| calc SLASH calc						{`Div ($startpos($2), $1, $3)}
+	| calc PLUS calc						{`Sum ($startpos($2), $1, $3)}
+	| calc MINUS calc						{`Sub ($startpos($2), $1, $3)}
 	| OPEN_ROUND calc CLOSE_ROUND					{$2}
 
