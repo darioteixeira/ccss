@@ -86,11 +86,14 @@ let rec main_scanner = lexer
 	| "^="				-> ATTR_PREFIX
 	| "$="				-> ATTR_SUFFIX
 	| "*="				-> ATTR_SUBSTRING
+	| space* "**" space*		-> MUL
+	| space* "%%" space*		-> DIV
+	| space* "++" space*		-> SUM
+	| space* "--" space*		-> SUB
 	| space* "::" space*		-> DOUBLE_COLON
 	| space* '*' space*		-> ASTERISK
 	| space* '/' space*		-> SLASH
 	| space* '+' space*		-> PLUS
-	| space* '-' space*		-> MINUS
 	| space* '~' space*		-> TILDE
 	| space* '>' space*		-> GT
 	| space* '{' space*		-> OPEN_CURLY

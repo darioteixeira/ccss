@@ -26,8 +26,9 @@ let nelist = function
 %token OPEN_ROUND CLOSE_ROUND
 %token OPEN_SQUARE CLOSE_SQUARE
 %token SEMICOLON COLON DOUBLE_COLON COMMA PERIOD
-%token ASTERISK SLASH PLUS MINUS
+%token ASTERISK SLASH PLUS
 %token TILDE GT EXCLAMATION DOLLAR
+%token MUL DIV SUM SUB
 
 %token ATTR_EQUALS
 %token ATTR_INCLUDES
@@ -52,8 +53,8 @@ let nelist = function
 /* Associativity and precedence declarations.					*/
 /********************************************************************************/
 
-%left PLUS MINUS
-%left ASTERISK SLASH
+%left SUM SUB
+%left MUL DIV
 
 
 /********************************************************************************/
@@ -170,13 +171,14 @@ term:
 	| URI STRING CLOSE_ROUND					{`Uri $2}
 	| HASH								{`Hash $1}
 	| TERM_FUNC expr CLOSE_ROUND					{`Term_func ($1, $2)}
+	| SLASH								{`Slash}
 
 calc:
 	| DOLLAR IDENT							{`Varref ($startpos($1), $2)}
 	| QUANTITY							{`Quantity $1}
-	| calc ASTERISK calc						{`Mul ($startpos($2), $1, $3)}
-	| calc SLASH calc						{`Div ($startpos($2), $1, $3)}
-	| calc PLUS calc						{`Sum ($startpos($2), $1, $3)}
-	| calc MINUS calc						{`Sub ($startpos($2), $1, $3)}
+	| calc MUL calc							{`Mul ($startpos($2), $1, $3)}
+	| calc DIV calc							{`Div ($startpos($2), $1, $3)}
+	| calc SUM calc							{`Sum ($startpos($2), $1, $3)}
+	| calc SUB calc							{`Sub ($startpos($2), $1, $3)}
 	| OPEN_ROUND calc CLOSE_ROUND					{$2}
 

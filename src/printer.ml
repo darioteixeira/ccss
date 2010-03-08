@@ -173,6 +173,7 @@ let sprint stylesheet =
 		| `Uri str		-> sprintf "url(\"%s\")" str
 		| `Hash str		-> "#" ^ str
 		| `Term_func (f, expr)	-> sprintf "%s(%s)" f (sprint_expression expr)
+		| `Slash		-> "/"
 
 	and sprint_calc calc = match expand_calc calc with
 		| Numeric (num, units) -> (sprintf "%.4g" (Num.float_of_num num)) ^ (match units with Some s -> s | None -> "")

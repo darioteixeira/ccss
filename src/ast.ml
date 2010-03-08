@@ -109,6 +109,7 @@ and term_t =
 	| `Uri of string
 	| `Hash of string
 	| `Term_func of string * expression_t
+	| `Slash
 	]
 
 and calc_t =
