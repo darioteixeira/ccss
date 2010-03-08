@@ -13,7 +13,25 @@ open Printf
 (**	{1 Exceptions}								*)
 (********************************************************************************)
 
-exception Bad_units of string * Lexing.position
+exception Variable_redeclared of Lexing.position * string
+exception Variable_undeclared of Lexing.position * string
+exception Invalid_arithmetic of Lexing.position * string
+exception Invalid_units of Lexing.position * string * string * string
+
+(********************************************************************************)
+(**	{1 Type definitions}							*)
+(********************************************************************************)
+
+type operation_t =
+	| Addition
+	| Subtraction
+	| Multiplication
+	| Division
+
+
+type calcres_t =
+	| Numeric of Num.num * string option
+	| Alpha of string
 
 
 (********************************************************************************)
@@ -24,26 +42,33 @@ exception Bad_units of string * Lexing.position
 (**	{2 Auxiliary functions}							*)
 (********************************************************************************)
 
-let sprint_list ?(termin = "") ?(sep = termin) f xs =
+let sprint_list ?(filter = false) ?(termin = "") ?(sep = termin) f xs =
 	let rec concat = function
 		| []	   -> ""
 		| [x]	   -> x ^ termin
-		| hd :: tl -> hd ^ sep ^ (concat tl)
-	in concat (List.map f xs)
+		| hd :: tl -> hd ^ sep ^ (concat tl) in
+	let lst = List.map f xs in
+	let lst' = if filter then List.filter (fun x -> x <> "") lst else lst
+	in concat lst'
 
 
 let func_of_op = function
-	| `Addition	  -> Num.add_num
-	| `Subtraction	  -> Num.sub_num
-	| `Multiplication -> Num.mult_num
-	| `Division	  -> Num.div_num
+	| Addition	 -> Num.add_num
+	| Subtraction	 -> Num.sub_num
+	| Multiplication -> Num.mult_num
+	| Division	 -> Num.div_num
 
 
 let string_of_op = function
-	| `Addition	  -> "addition"
-	| `Subtraction	  -> "subtraction"
-	| `Multiplication -> "multiplication"
-	| `Division	  -> "division"
+	| Addition	 -> "add"
+	| Subtraction	 -> "subtract"
+	| Multiplication -> "multiply"
+	| Division	 -> "divide"
+
+
+let string_of_unit = function
+	| Some u -> u
+	| None	 -> "a scalar"
 
 
 (********************************************************************************)
@@ -52,11 +77,13 @@ let string_of_op = function
 
 let sprint stylesheet =
 
+	let variables = Hashtbl.create 32 in
+
 	let rec sprint_stylesheet (maybe_charset, statements) =
 		let str1 = match maybe_charset with
 			| Some charset -> sprintf "@charset \"%s\"" charset
 			| None	       -> ""
-		and str2 = sprint_list ~termin:"\n\n" sprint_statement statements
+		and str2 = sprint_list ~filter:true ~termin:"\n\n" sprint_statement statements
 		in str1 ^ str2
 
 	and sprint_statement = function
@@ -75,6 +102,10 @@ let sprint stylesheet =
 		| `Fontface declarations ->
 			sprintf "@font-face\n\t{\n%s\t}"
 				(sprint_list ~termin:"\n" sprint_declaration declarations)
+		| `Vardecl (pos, id, expression) ->
+			if Hashtbl.mem variables id
+			then raise (Variable_redeclared (pos, id))
+			else Hashtbl.add variables id expression; ""
 		| `Rule rule ->
 			sprint_rule rule
 
@@ -143,29 +174,47 @@ let sprint stylesheet =
 		| `Hash str		-> "#" ^ str
 		| `Term_func (f, expr)	-> sprintf "%s(%s)" f (sprint_expression expr)
 
-	and sprint_calc calc =
-		let (num, units) = expand_calc calc
-		in (sprintf "%.4g" (Num.float_of_num num)) ^ (match units with Some s -> s | None -> "")
+	and sprint_calc calc = match expand_calc calc with
+		| Numeric (num, units) -> (sprintf "%.4g" (Num.float_of_num num)) ^ (match units with Some s -> s | None -> "")
+		| Alpha str	       -> str
 
 	and expand_calc = function
-		| `Quantity (num, units) -> (num, units)
-		| `Sum (pos, c1, c2)	 -> perform_calc `Addition pos c1 c2
-		| `Sub (pos, c1, c2)	 -> perform_calc `Subtraction pos c1 c2
-		| `Mul (pos, c1, c2)	 -> perform_calc `Multiplication pos c1 c2
-		| `Div (pos, c1, c2)	 -> perform_calc `Division pos c1 c2
+		| `Varref (pos, id) ->
+			begin
+				try
+					match Hashtbl.find variables id with
+						| [[`Calc calc]] -> expand_calc calc
+						| expression -> Alpha (sprint_expression expression)
+				with
+					Not_found -> raise (Variable_undeclared (pos, id))
+			end
+		| `Quantity (num, units) ->
+			Numeric (num, units)
+		| `Sum (pos, c1, c2) ->
+			perform_calc Addition pos c1 c2
+		| `Sub (pos, c1, c2) ->
+			perform_calc Subtraction pos c1 c2
+		| `Mul (pos, c1, c2) ->
+			perform_calc Multiplication pos c1 c2
+		| `Div (pos, c1, c2) ->
+			perform_calc Division pos c1 c2
 
 	and perform_calc op pos x y =
 		let func = func_of_op op
-		and (num1, units1) = (expand_calc x)
-		and (num2, units2) = (expand_calc y) in
+		and (num1, units1) = match expand_calc x with
+			| Numeric (num, units) -> (num, units)
+			| _		       -> raise (Invalid_arithmetic (pos, string_of_op op))
+		and (num2, units2) = match expand_calc y with
+			| Numeric (num, units) -> (num, units)
+			| _		       -> raise (Invalid_arithmetic (pos, string_of_op op)) in
 		let units = match (op, units1, units2) with
-			| (`Addition, u1, u2) when u1 = u2    -> u1
-			| (`Subtraction, u1, u2) when u1 = u2 -> u1
-			| (`Multiplication, None, u2)	      -> u2
-			| (`Multiplication, u1, None)	      -> u1
-			| (`Division, u1, None)		      -> u1
-			| _				      -> raise (Bad_units (string_of_op op, pos))
-		in (func num1 num2, units)
+			| (Addition, u1, u2) when u1 = u2    -> u1
+			| (Subtraction, u1, u2) when u1 = u2 -> u1
+			| (Multiplication, None, u2)	     -> u2
+			| (Multiplication, u1, None)	     -> u1
+			| (Division, u1, None)		     -> u1
+			| (op, u1, u2)			     -> raise (Invalid_units (pos, string_of_op op, string_of_unit u1, string_of_unit u2))
+		in Numeric (func num1 num2, units)
 
 	in sprint_stylesheet stylesheet
 

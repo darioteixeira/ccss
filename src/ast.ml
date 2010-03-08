@@ -26,6 +26,7 @@ and statement_t =
 	| `Media of medium_t list * rule_t list
 	| `Page of pseudo_page_t option * declaration_t list
 	| `Fontface of declaration_t list
+	| `Vardecl of Lexing.position * variable_t * expression_t
 	| `Rule of rule_t
 	]
 
@@ -111,7 +112,8 @@ and term_t =
 	]
 
 and calc_t =
-	[ `Quantity of quantity_t
+	[ `Varref of Lexing.position * variable_t
+	| `Quantity of quantity_t
 	| `Sum of Lexing.position * calc_t * calc_t
 	| `Sub of Lexing.position * calc_t * calc_t
 	| `Mul of Lexing.position * calc_t * calc_t

@@ -63,7 +63,7 @@ let parse_quantity =
 (********************************************************************************)
 
 let rec main_scanner = lexer
-	| "uri("			-> URI
+	| "url("			-> URI
 	| ident '('			-> TERM_FUNC (rtrim_lexbuf lexbuf)
 	| number units?			-> QUANTITY (parse_quantity lexbuf)
 	| ident				-> IDENT (Ulexing.utf8_lexeme lexbuf)
@@ -86,20 +86,21 @@ let rec main_scanner = lexer
 	| "^="				-> ATTR_PREFIX
 	| "$="				-> ATTR_SUFFIX
 	| "*="				-> ATTR_SUBSTRING
-	| space* "*" space*		-> ASTERISK
-	| space* "/" space*		-> SLASH
-	| space* "+" space*		-> PLUS
-	| space* "-" space*		-> MINUS
-	| space* "~" space*		-> TILDE
+	| space* "::" space*		-> DOUBLE_COLON
+	| space* '*' space*		-> ASTERISK
+	| space* '/' space*		-> SLASH
+	| space* '+' space*		-> PLUS
+	| space* '-' space*		-> MINUS
+	| space* '~' space*		-> TILDE
 	| space* '>' space*		-> GT
 	| space* '{' space*		-> OPEN_CURLY
 	| space* '}' space*		-> CLOSE_CURLY
 	| space* ';' space*		-> SEMICOLON
-	| space* "::" space*		-> DOUBLE_COLON
 	| space* ':' space*		-> COLON
 	| space* ',' space*		-> COMMA
 	| space* '(' space*		-> OPEN_ROUND
 	| space* ')' space*		-> CLOSE_ROUND
+	| space* '$'			-> DOLLAR
 	| '.'				-> PERIOD
 	| '['				-> OPEN_SQUARE
 	| ']'				-> CLOSE_SQUARE

@@ -58,6 +58,14 @@ let () =
 		let out = Printer.sprint css
 		in print_string out
 	with
-		| Syntax_error pos		-> Printf.eprintf "Syntax error on line %d\n" pos.pos_lnum
-		| Printer.Bad_units (oper, pos) -> Printf.eprintf "Unit error in %s on line %d\n" oper pos.pos_lnum
+		| Syntax_error pos ->
+			Printf.eprintf "Syntax error on line %d\n" pos.pos_lnum
+		| Printer.Variable_redeclared (pos, id) ->
+			Printf.eprintf "Attempt to redefine variable '%s' in line %d\n" id pos.pos_lnum
+		| Printer.Variable_undeclared (pos, id) ->
+			Printf.eprintf "Variable '%s' referenced in line %d has not been declared\n" id pos.pos_lnum
+		| Printer.Invalid_arithmetic (pos, op) ->
+			Printf.eprintf "Invalid arithmetic in line %d: attempt to %s with non-numeric expression\n" pos.pos_lnum op
+		| Printer.Invalid_units (pos, op, u1, u2) ->
+			Printf.eprintf "Invalid use of units in line %d: attempt to %s '%s' and '%s'\n" pos.pos_lnum op u1 u2
 

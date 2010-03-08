@@ -27,7 +27,7 @@ let nelist = function
 %token OPEN_SQUARE CLOSE_SQUARE
 %token SEMICOLON COLON DOUBLE_COLON COMMA PERIOD
 %token ASTERISK SLASH PLUS MINUS
-%token TILDE GT EXCLAMATION
+%token TILDE GT EXCLAMATION DOLLAR
 
 %token ATTR_EQUALS
 %token ATTR_INCLUDES
@@ -77,6 +77,7 @@ statement:
 	| MEDIA media_list OPEN_CURLY rule+ CLOSE_CURLY			{`Media ($2, $4)}
 	| PAGE pseudo_page? declaration_block				{`Page ($2, $3)}
 	| FONTFACE declaration_block					{`Fontface $2}
+	| DOLLAR IDENT COLON expr SEMICOLON				{`Vardecl ($startpos($1), $2, $4)}
 	| rule								{`Rule $1}
 
 source:
@@ -160,7 +161,7 @@ expr:
 	| separated_nonempty_list(COMMA, sentence)			{$1}
 
 sentence:
-	| separated_nonempty_list (S, term)				{$1}
+	| separated_nonempty_list (S?, term)				{$1}
 
 term:
 	| calc								{`Calc $1}
@@ -171,6 +172,7 @@ term:
 	| TERM_FUNC expr CLOSE_ROUND					{`Term_func ($1, $2)}
 
 calc:
+	| DOLLAR IDENT							{`Varref ($startpos($1), $2)}
 	| QUANTITY							{`Quantity $1}
 	| calc ASTERISK calc						{`Mul ($startpos($2), $1, $3)}
 	| calc SLASH calc						{`Div ($startpos($2), $1, $3)}
