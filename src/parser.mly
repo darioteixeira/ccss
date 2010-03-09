@@ -25,10 +25,9 @@ let nelist = function
 %token OPEN_CURLY CLOSE_CURLY
 %token OPEN_ROUND CLOSE_ROUND
 %token OPEN_SQUARE CLOSE_SQUARE
-%token SEMICOLON COLON DOUBLE_COLON COMMA PERIOD
-%token ASTERISK SLASH PLUS
-%token TILDE GT EXCLAMATION DOLLAR
-%token MUL DIV SUM SUB
+%token SEMICOLON COLON DOUBLE_COLON COMMA PERIOD SLASH
+%token ASTERISK PERCENT PLUS MINUS
+%token TILDE GT EXCLAMATION
 
 %token ATTR_EQUALS
 %token ATTR_INCLUDES
@@ -41,6 +40,7 @@ let nelist = function
 %token <string> STRING
 %token <string> IDENT
 %token <string> HASH
+%token <string> VAR
 
 %token <string> QUALIFIER_FUNC
 %token <string> NTH_FUNC
@@ -53,8 +53,8 @@ let nelist = function
 /* Associativity and precedence declarations.					*/
 /********************************************************************************/
 
-%left SUM SUB
-%left MUL DIV
+%left PLUS MINUS
+%left ASTERISK PERCENT
 
 
 /********************************************************************************/
@@ -78,7 +78,7 @@ statement:
 	| MEDIA media_list OPEN_CURLY rule+ CLOSE_CURLY			{`Media ($2, $4)}
 	| PAGE pseudo_page? declaration_block				{`Page ($2, $3)}
 	| FONTFACE declaration_block					{`Fontface $2}
-	| DOLLAR IDENT COLON expr SEMICOLON				{`Vardecl ($startpos($1), $2, $4)}
+	| VAR COLON expr SEMICOLON					{`Vardecl ($startpos($1), $1, $3)}
 	| rule								{`Rule $1}
 
 source:
@@ -174,11 +174,11 @@ term:
 	| SLASH								{`Slash}
 
 calc:
-	| DOLLAR IDENT							{`Varref ($startpos($1), $2)}
+	| VAR								{`Varref ($startpos($1), $1)}
 	| QUANTITY							{`Quantity $1}
-	| calc MUL calc							{`Mul ($startpos($2), $1, $3)}
-	| calc DIV calc							{`Div ($startpos($2), $1, $3)}
-	| calc SUM calc							{`Sum ($startpos($2), $1, $3)}
-	| calc SUB calc							{`Sub ($startpos($2), $1, $3)}
+	| calc ASTERISK calc						{`Mul ($startpos($2), $1, $3)}
+	| calc PERCENT calc						{`Div ($startpos($2), $1, $3)}
+	| calc PLUS calc						{`Sum ($startpos($2), $1, $3)}
+	| calc MINUS calc						{`Sub ($startpos($2), $1, $3)}
 	| OPEN_ROUND calc CLOSE_ROUND					{$2}
 

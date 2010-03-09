@@ -17,7 +17,8 @@ let regexp alpha = ['a'-'z']
 let regexp digit = ['0'-'9']
 let regexp hexa = ['0'-'9' 'a'-'f']
 let regexp space = [' ' '\t' '\n']
-let regexp ident = ['a'-'z']['a'-'z' '0'-'9' '-']*
+let regexp ident = ['a'-'z'] ['a'-'z' '0'-'9' '-']*
+let regexp variable = ['A'-'Z'] ['A'-'Z' 'a'-'z' '0'-'9' '-' '_']*
 let regexp hashed = ['a'-'z' '0'-'9' '-']+
 let regexp number = ('-' | '+')? digit+ ('.' digit+)?
 let regexp units = alpha+ | '%'
@@ -32,6 +33,12 @@ let regexp nth = [^ ')']+ ')'
 (********************************************************************************)
 (**	{2 Auxiliary functions}							*)
 (********************************************************************************)
+
+let add_lines nlines lexbuf =
+	let adder acc el = if el = 10 then acc+1 else acc in
+	let lexeme = Ulexing.lexeme lexbuf
+	in nlines + (Array.fold_left adder 0 lexeme)
+
 
 let trim_lexbuf ?(left = 0) ?(right = 0) lexbuf =
 	Ulexing.utf8_sub_lexeme lexbuf left ((Ulexing.lexeme_length lexbuf) - left - right)
@@ -62,71 +69,69 @@ let parse_quantity =
 (**	{2 Lexers}								*)
 (********************************************************************************)
 
-let rec main_scanner = lexer
-	| "url("			-> URI
-	| ident '('			-> TERM_FUNC (rtrim_lexbuf lexbuf)
-	| number units?			-> QUANTITY (parse_quantity lexbuf)
-	| ident				-> IDENT (Ulexing.utf8_lexeme lexbuf)
-	| ":nth-child(" nth		-> NTH_FUNC (ltrim_lexbuf lexbuf)
-	| ":nth-last-child(" nth	-> NTH_FUNC (ltrim_lexbuf lexbuf)
-	| ":nth-of-type(" nth		-> NTH_FUNC (ltrim_lexbuf lexbuf)
-	| ":nth-last-of-type(" nth	-> NTH_FUNC (ltrim_lexbuf lexbuf)
-	| ':' ident '('			-> QUALIFIER_FUNC (trim_lexbuf ~right:1 ~left:1 lexbuf)
-	| '#' hashed			-> HASH (ltrim_lexbuf lexbuf)
-	| "@charset" space+		-> CHARSET
-	| "@import" space+		-> IMPORT
-	| "@media" space+		-> MEDIA
-	| "@page" space+		-> PAGE
-	| "@font-face" space+		-> FONTFACE
-	| space* "/*"			-> comment_scanner lexbuf
-	| space* slc space*		-> main_scanner lexbuf
-	| "="				-> ATTR_EQUALS
-	| "~="				-> ATTR_INCLUDES
-	| "|="				-> ATTR_DASHMATCH
-	| "^="				-> ATTR_PREFIX
-	| "$="				-> ATTR_SUFFIX
-	| "*="				-> ATTR_SUBSTRING
-	| space* "**" space*		-> MUL
-	| space* "%%" space*		-> DIV
-	| space* "++" space*		-> SUM
-	| space* "--" space*		-> SUB
-	| space* "::" space*		-> DOUBLE_COLON
-	| space* '*' space*		-> ASTERISK
-	| space* '/' space*		-> SLASH
-	| space* '+' space*		-> PLUS
-	| space* '~' space*		-> TILDE
-	| space* '>' space*		-> GT
-	| space* '{' space*		-> OPEN_CURLY
-	| space* '}' space*		-> CLOSE_CURLY
-	| space* ';' space*		-> SEMICOLON
-	| space* ':' space*		-> COLON
-	| space* ',' space*		-> COMMA
-	| space* '(' space*		-> OPEN_ROUND
-	| space* ')' space*		-> CLOSE_ROUND
-	| space* '$'			-> DOLLAR
-	| '.'				-> PERIOD
-	| '['				-> OPEN_SQUARE
-	| ']'				-> CLOSE_SQUARE
-	| '!'				-> EXCLAMATION
-	| '\''				-> STRING (single_string_scanner "" lexbuf)
-	| '"'				-> STRING (double_string_scanner "" lexbuf)
-	| space				-> S
-	| eof				-> EOF
+let rec main_scanner nlines = lexer
+	| "url("			-> (nlines, URI)
+	| ident '('			-> (nlines, TERM_FUNC (rtrim_lexbuf lexbuf))
+	| number units?			-> (nlines, QUANTITY (parse_quantity lexbuf))
+	| ident				-> (nlines, IDENT (Ulexing.utf8_lexeme lexbuf))
+	| variable			-> (nlines, VAR (Ulexing.utf8_lexeme lexbuf))
+	| ":nth-child(" nth		-> (nlines, NTH_FUNC (ltrim_lexbuf lexbuf))
+	| ":nth-last-child(" nth	-> (nlines, NTH_FUNC (ltrim_lexbuf lexbuf))
+	| ":nth-of-type(" nth		-> (nlines, NTH_FUNC (ltrim_lexbuf lexbuf))
+	| ":nth-last-of-type(" nth	-> (nlines, NTH_FUNC (ltrim_lexbuf lexbuf))
+	| ':' ident '('			-> (nlines, QUALIFIER_FUNC (trim_lexbuf ~right:1 ~left:1 lexbuf))
+	| '#' hashed			-> (nlines, HASH (ltrim_lexbuf lexbuf))
+	| "@charset" space+		-> (add_lines nlines lexbuf, CHARSET)
+	| "@import" space+		-> (add_lines nlines lexbuf, IMPORT)
+	| "@media" space+		-> (add_lines nlines lexbuf, MEDIA)
+	| "@page" space+		-> (add_lines nlines lexbuf, PAGE)
+	| "@font-face" space+		-> (add_lines nlines lexbuf, FONTFACE)
+	| space* "/*"			-> comment_scanner nlines lexbuf
+	| space* slc space*		-> main_scanner (add_lines nlines lexbuf) lexbuf
+	| "="				-> (nlines, ATTR_EQUALS)
+	| "~="				-> (nlines, ATTR_INCLUDES)
+	| "|="				-> (nlines, ATTR_DASHMATCH)
+	| "^="				-> (nlines, ATTR_PREFIX)
+	| "$="				-> (nlines, ATTR_SUFFIX)
+	| "*="				-> (nlines, ATTR_SUBSTRING)
+	| space* "::" space*		-> (add_lines nlines lexbuf, DOUBLE_COLON)
+	| space* '*' space*		-> (add_lines nlines lexbuf, ASTERISK)
+	| space* '%' space*		-> (add_lines nlines lexbuf, PERCENT)
+	| space* '/' space*		-> (add_lines nlines lexbuf, SLASH)
+	| space* '+' space*		-> (add_lines nlines lexbuf, PLUS)
+	| space* '-' space*		-> (add_lines nlines lexbuf, MINUS)
+	| space* '~' space*		-> (add_lines nlines lexbuf, TILDE)
+	| space* '>' space*		-> (add_lines nlines lexbuf, GT)
+	| space* '{' space*		-> (add_lines nlines lexbuf, OPEN_CURLY)
+	| space* '}' space*		-> (add_lines nlines lexbuf, CLOSE_CURLY)
+	| space* ';' space*		-> (add_lines nlines lexbuf, SEMICOLON)
+	| space* ':' space*		-> (add_lines nlines lexbuf, COLON)
+	| space* ',' space*		-> (add_lines nlines lexbuf, COMMA)
+	| space* '(' space*		-> (add_lines nlines lexbuf, OPEN_ROUND)
+	| space* ')' space*		-> (add_lines nlines lexbuf, CLOSE_ROUND)
+	| '.'				-> (nlines, PERIOD)
+	| '['				-> (nlines, OPEN_SQUARE)
+	| ']'				-> (nlines, CLOSE_SQUARE)
+	| '!'				-> (nlines, EXCLAMATION)
+	| '\''				-> single_string_scanner nlines "" lexbuf
+	| '"'				-> double_string_scanner nlines "" lexbuf
+	| space				-> (add_lines nlines lexbuf, S)
+	| eof				-> (nlines, EOF)
 
 
-and single_string_scanner accum = lexer
-	| '\''				-> accum
-	| '\\' _			-> single_string_scanner (accum ^ (Ulexing.utf8_sub_lexeme lexbuf 1 1)) lexbuf
-	| _				-> single_string_scanner (accum ^ (Ulexing.utf8_lexeme lexbuf)) lexbuf
+and single_string_scanner nlines accum = lexer
+	| '\''				-> (nlines, STRING accum)
+	| '\\' _			-> single_string_scanner (add_lines nlines lexbuf) (accum ^ (Ulexing.utf8_sub_lexeme lexbuf 1 1)) lexbuf
+	| _				-> single_string_scanner (add_lines nlines lexbuf) (accum ^ (Ulexing.utf8_lexeme lexbuf)) lexbuf
 
 
-and double_string_scanner accum = lexer
-	| '"'				-> accum
-	| '\\' _			-> double_string_scanner (accum ^ (Ulexing.utf8_sub_lexeme lexbuf 1 1)) lexbuf
-	| _				-> double_string_scanner (accum ^ (Ulexing.utf8_lexeme lexbuf)) lexbuf
+and double_string_scanner nlines accum = lexer
+	| '"'				-> (nlines, STRING accum)
+	| '\\' _			-> double_string_scanner (add_lines nlines lexbuf) (accum ^ (Ulexing.utf8_sub_lexeme lexbuf 1 1)) lexbuf
+	| _				-> double_string_scanner (add_lines nlines lexbuf) (accum ^ (Ulexing.utf8_lexeme lexbuf)) lexbuf
 
 
-and comment_scanner = lexer
-	| "*/" space*			-> main_scanner lexbuf
-	| _				-> comment_scanner lexbuf
+and comment_scanner nlines = lexer
+	| "*/" space*			-> main_scanner (add_lines nlines lexbuf) lexbuf
+	| _				-> comment_scanner (add_lines nlines lexbuf) lexbuf
 
