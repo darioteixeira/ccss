@@ -24,10 +24,9 @@ from stdin and outputs its result on stdout.
 With CCSS, you may declare and use variables in your CSS code (in fact, CCSS
 variables are actually constants, since they are assigned upon declaration and
 may not be changed).  Variable identifiers must begin with an uppercase letter,
-and be followed by any combination of letters, numbers, and the characters '-'
-(dash) and '_' (underscore).  The value assigned to a variable may be any
-CSS expression (including expressions augmented with arithmetic operators,
-as described in the next section), as the code below demonstrates:
+and be followed by any combination of letters, numbers, and the characters
+'-' (dash) and '_' (underscore).  The value assigned to a variable may be
+any CSS expression -- not only quantities -- as the code below demonstrates:
 
 Foo: 20em;
 Bar: 1px solid black;
