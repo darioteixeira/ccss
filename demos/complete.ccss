@@ -8,11 +8,11 @@
 @import url("bar");
 @import url("bar") print, screen;
 
-$foo1: 50em;
-$foo2: 10em ++ 20em;
-$foo3: $foo2 -- 5em;
-$foo4: 2;
-$foo5: 2px solid black;
+Foo1: 50em;
+Foo2: 10em + 20em;
+Foo3: Foo2 - 5em;
+Foo4: 2;
+Foo5: 2px solid black;
 
 @media print, screen
 	{
@@ -39,21 +39,27 @@ h1
 
 #main h1[class^="section"] {color: red;}
 
+p:nth-child(odd)	{color: black;}
+p:nth-child(even)	{color: black;}
+p:nth-child(2n+1)	{color: black;}
+p:nth-child(2n-1)	{color: black;}
+p:nth-child(-2n-1)	{color: black;}
+
 h1 {background: url('image.png') no-repeat;}
 
-h1 {width: 10em ++ 20em;}				// Should equal 30em
-h1 {width: (10em ++ 20em) %% 2;}			// Should equal 15em
-h1 {width: (30em -- 0.5em) ** 2;}			// Should equal 59em
-h1 {width: 1em ++ (30em -- 0.5em) ** 2;}		// Should equal 60em
-h1 {width: 1em ++ 2em ++ 0.5em ** 2;}			// Should equal 4em
-h1 {width: 20em %% 2;}					// Should equal 10em
-h1 {width: 5em ** 2;}					// Should equal 10em
-h1 {width: 2 ** 5em;}					// Should equal 10em
-h1 {width: (10px ++ 5px ++ 15px) ++ (5px ++ 5px);}	// Should equal 40px
+h1 {width: 10em + 20em;}				// Should equal 30em
+h1 {width: (10em + 20em) ÷ 2;}				// Should equal 15em
+h1 {width: (30em - 0.5em) * 2;}				// Should equal 59em
+h1 {width: 1em + (30em - 0.5em) * 2;}			// Should equal 60em
+h1 {width: 1em + 2em + 0.5em * 2;}			// Should equal 4em
+h1 {width: 20em ÷ 2;}					// Should equal 10em
+h1 {width: 5em * 2;}					// Should equal 10em
+h1 {width: 2 * 5em;}					// Should equal 10em
+h1 {width: (10px + 5px + 15px) + (5px + 5px);}		// Should equal 40px
 
-h1 {width: $foo1;}
-h1 {width: $foo2;}
-h1 {width: $foo3;}
-h1 {width: $foo4 ** ($foo2 ++ $foo3);}
-h1 {border: $foo5;}
+h1 {width: Foo1;}
+h1 {width: Foo2;}
+h1 {width: Foo3;}
+h1 {width: Foo4 * (Foo2 + Foo3);}
+h1 {border: Foo5;}
 

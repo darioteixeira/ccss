@@ -1,5 +1,5 @@
 =========================================================================
-| README for CCSS 0.1							|
+| README for CCSS 1.0							|
 |									|
 | Dario Teixeira (dario.teixeira@yahoo.com)				|
 | March 2010								|
@@ -9,42 +9,90 @@
 ===========
 
 CCSS is a preprocessor/pretty-printer for CSS (Cascading Style Sheets).
-It extends the CSS language with support for basic arithmetic operations
-(addition, subtraction, multiplication, division) in expressions.  The
-programme reads the CSS source from stdin and outputs its result on stdout.
-As an example, given the following input:
+It extends the CSS language with support for declaration of variables and
+basic arithmetic operations (addition, subtraction, multiplication, division).
+The programme is supposed to be used as a filter: it reads the CSS source
+from stdin and outputs its result on stdout.
 
-  h1
-	{
-	width: 2 * (10em + 5em);
+
+2. Features
+===========
+
+2.1. Variables
+==============
+
+With CCSS, you may declare and use variables in your CSS code (in fact, CCSS
+variables are actually constants, since they are assigned upon declaration and
+may not be changed).  Variable identifiers must begin with an uppercase letter,
+and be followed by any combination of letters, numbers, and the characters '-'
+(dash) and '_' (underscore).  The value assigned to a variable may be any
+CSS expression (including expressions augmented with arithmetic operators,
+as described in the next section), as the code below demonstrates:
+
+Foo: 20em;
+Bar: 1px solid black;
+
+h1	{
+	width: Foo;
+	border: Bar;
 	}
+
+
+2.2. Arithmetic
+===============
+
+CCSS extends CSS expressions with basic arithmetic operations (addition,
+subtraction, multiplication, and division).  The operands must be CSS
+quantities (either dimensionless or with an attached unit), or other
+expressions that ultimately resolve into a quantity.  Moreover, variables
+whose value is a quantity (or an expression which resolves into a quantity)
+may also be used as operand.
+
+The operators are '+', '-', '*', and '÷'.  Note that multiplication and
+division have precedence over addition and subtraction, but you may use
+parentheses to group operations.  Consider thus the following input:
+
+Left: 10em;
+Right: 5em;
+Total: Left + Right;
+
+h1	{
+	padding: (1.5em + 0.5em) * 2;
+	width: 2 * Total;
+	}
+
 
 CCSS will produce the following output:
 
-  h1
+h1
 	{
+	padding: 4em;
 	width: 30em;
 	}
 
-Moreover, CCSS performs a basic dimensionality analysis of each operation,
-ensuring the result is consistent.
+
+The reader will have noticed that CCSS is unit-aware when performing arithmetic.
+In fact, the programme performs a basic sanity check of units, and will complain
+if you try, for example, to add "1em" with "10px".  On the other hand, CCSS is
+also oblivious to the quantities represented by the units, and will also complain
+if you try to add "1cm" with "1mm".
 
 
-2. Dependencies
+3. Dependencies
 ===============
 
 Menhir is used as the parser generator [1], while scanning is done with Ulex [2].
 Another requirement is Pcre-ocaml [3].
 
 
-3. Building and installing
+4. Building and installing
 ==========================
 
 The build system relies on Ocamlbuild.  Enter 'make' in the 'src' directory
 for building the bytecode and native binaries.
 
 
-4. License
+5. License
 ==========
 
 CCSS is distributed under the terms of the GNU GPL version 2.

@@ -18,6 +18,7 @@ exception Variable_undeclared of Lexing.position * string
 exception Invalid_arithmetic of Lexing.position * string
 exception Invalid_units of Lexing.position * string * string * string
 
+
 (********************************************************************************)
 (**	{1 Type definitions}							*)
 (********************************************************************************)
