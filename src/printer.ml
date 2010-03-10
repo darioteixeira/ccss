@@ -140,13 +140,16 @@ let sprint stylesheet =
 		| `Universal -> "*"
 
 	and sprint_qualifier = function
-		| `Id str			  -> "#" ^ str
-		| `Class str			  -> "." ^ str
-		| `Attr (name, value)		  -> sprintf "[%s%s]" name (sprint_attr value)
-		| `Pseudo_class str		  -> ":" ^ str
-		| `Pseudo_element str		  -> "::" ^ str
-		| `Qualifier_func (f, qualifiers) -> sprintf ":%s(%s)" f (sprint_list sprint_qualifier qualifiers)
-		| `Nth_func str			  -> ":" ^ str
+		| `Id str		-> "#" ^ str
+		| `Class str		-> "." ^ str
+		| `Attr (name, value)	-> sprintf "[%s%s]" name (sprint_attr value)
+		| `Pseudo_class str	-> ":" ^ str
+		| `Pseudo_element str	-> "::" ^ str
+		| `Sel_func (str, args) -> sprintf ":%s(%s)" str (sprint_function args)
+
+	and sprint_function = function
+		| `Qualified qualifiers -> sprint_list sprint_qualifier qualifiers
+		| `Nth str		-> str
 
 	and sprint_attr = function
 		| `Attr_exists	    -> ""

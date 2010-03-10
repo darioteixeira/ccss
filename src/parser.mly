@@ -39,11 +39,11 @@ let nelist = function
 %token URI
 %token <string> STRING
 %token <string> IDENT
+%token <string> NTH
 %token <string> HASH
 %token <string> VAR
 
-%token <string> QUALIFIER_FUNC
-%token <string> NTH_FUNC
+%token <string> SEL_FUNC
 %token <string> TERM_FUNC
 
 %token <Ast.quantity_t> QUANTITY
@@ -131,8 +131,12 @@ qualifier:
 	| OPEN_SQUARE IDENT attr_operation CLOSE_SQUARE			{`Attr ($2, $3)}
 	| COLON IDENT							{`Pseudo_class $2}
 	| DOUBLE_COLON IDENT						{`Pseudo_element $2}
-	| QUALIFIER_FUNC qualifier+ CLOSE_ROUND				{`Qualifier_func ($1, $2)}
-	| NTH_FUNC							{`Nth_func $1}
+	| SEL_FUNC function_args CLOSE_ROUND				{`Sel_func ($1, $2)}
+
+function_args:
+	| qualifier+							{`Qualified $1}
+	| NTH								{`Nth $1}
+	| IDENT								{`Nth $1}
 
 attr_operation:
 	| /* empty */							{`Attr_exists}

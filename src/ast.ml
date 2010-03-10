@@ -73,8 +73,12 @@ and qualifier_t =
 	| `Attr of string * attr_t
 	| `Pseudo_class of string
 	| `Pseudo_element of string
-	| `Qualifier_func of string * qualifier_t list
-	| `Nth_func of string
+	| `Sel_func of string * function_t
+	]
+
+and function_t =
+	[ `Qualified of qualifier_t list
+	| `Nth of string
 	]
 
 and attr_t =

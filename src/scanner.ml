@@ -30,7 +30,7 @@ let regexp hashed = ['a'-'z' '0'-'9' '-']+
 let regexp number = ('-' | '+')? digit+ ('.' digit+)?
 let regexp units = alpha+ | '%'
 let regexp slc = "//" [^ '\n']+
-let regexp nth = [^ ')']+ ')'
+let regexp nth = ('-' | '+')? digit+ 'n' ('-' | '+') digit+
 
 
 (********************************************************************************)
@@ -79,14 +79,11 @@ let parse_quantity =
 let rec main_scanner nlines = lexer
 	| "url("			-> (nlines, URI)
 	| ident '('			-> (nlines, TERM_FUNC (rtrim_lexbuf lexbuf))
+	| ':' ident '('			-> (nlines, SEL_FUNC (trim_lexbuf ~right:1 ~left:1 lexbuf))
+	| nth				-> (nlines, NTH (Ulexing.utf8_lexeme lexbuf))
 	| number units?			-> (nlines, QUANTITY (parse_quantity lexbuf))
 	| ident				-> (nlines, IDENT (Ulexing.utf8_lexeme lexbuf))
 	| variable			-> (nlines, VAR (Ulexing.utf8_lexeme lexbuf))
-	| ":nth-child(" nth		-> (nlines, NTH_FUNC (ltrim_lexbuf lexbuf))
-	| ":nth-last-child(" nth	-> (nlines, NTH_FUNC (ltrim_lexbuf lexbuf))
-	| ":nth-of-type(" nth		-> (nlines, NTH_FUNC (ltrim_lexbuf lexbuf))
-	| ":nth-last-of-type(" nth	-> (nlines, NTH_FUNC (ltrim_lexbuf lexbuf))
-	| ':' ident '('			-> (nlines, QUALIFIER_FUNC (trim_lexbuf ~right:1 ~left:1 lexbuf))
 	| '#' hashed			-> (nlines, HASH (ltrim_lexbuf lexbuf))
 	| "@charset" space+		-> (add_lines nlines lexbuf, CHARSET)
 	| "@import" space+		-> (add_lines nlines lexbuf, IMPORT)
