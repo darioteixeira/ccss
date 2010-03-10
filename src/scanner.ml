@@ -10,6 +10,13 @@ open Parser
 
 
 (********************************************************************************)
+(**	{1 Exceptions}								*)
+(********************************************************************************)
+
+exception Error of string
+
+
+(********************************************************************************)
 (**	{1 Regular expressions}							*)
 (********************************************************************************)
 
@@ -17,7 +24,7 @@ let regexp alpha = ['a'-'z']
 let regexp digit = ['0'-'9']
 let regexp hexa = ['0'-'9' 'a'-'f']
 let regexp space = [' ' '\t' '\n']
-let regexp ident = ['a'-'z'] ['a'-'z' '0'-'9' '-']*
+let regexp ident = ['a'-'z'] ['a'-'z' '0'-'9' '-' '_']*
 let regexp variable = ['A'-'Z'] ['A'-'Z' 'a'-'z' '0'-'9' '-' '_']*
 let regexp hashed = ['a'-'z' '0'-'9' '-']+
 let regexp number = ('-' | '+')? digit+ ('.' digit+)?
@@ -96,7 +103,7 @@ let rec main_scanner nlines = lexer
 	| "*="				-> (nlines, ATTR_SUBSTRING)
 	| space* "::" space*		-> (add_lines nlines lexbuf, DOUBLE_COLON)
 	| space* '*' space*		-> (add_lines nlines lexbuf, ASTERISK)
-	| space* '%' space*		-> (add_lines nlines lexbuf, PERCENT)
+	| space* 247 space*		-> (add_lines nlines lexbuf, QUOTIENT)	(* 247 is the decimal Unicode codepoint for the division sign *)
 	| space* '/' space*		-> (add_lines nlines lexbuf, SLASH)
 	| space* '+' space*		-> (add_lines nlines lexbuf, PLUS)
 	| space* '-' space*		-> (add_lines nlines lexbuf, MINUS)
@@ -117,6 +124,7 @@ let rec main_scanner nlines = lexer
 	| '"'				-> double_string_scanner nlines "" lexbuf
 	| space				-> (add_lines nlines lexbuf, S)
 	| eof				-> (nlines, EOF)
+	| _				-> raise (Error (Ulexing.utf8_lexeme lexbuf))
 
 
 and single_string_scanner nlines accum = lexer

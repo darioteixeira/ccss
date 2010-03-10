@@ -14,7 +14,7 @@ open Parser
 (**	{1 Exceptions}								*)
 (********************************************************************************)
 
-exception Scanning_error of Lexing.position
+exception Scanning_error of Lexing.position * string
 exception Syntax_error of Lexing.position
 
 
@@ -40,8 +40,8 @@ let menhir_with_ulex menhir_parser lexbuf =
 	in try
 		revised_parser lexer_maker
 	with
-		| Ulexing.Error -> raise (Scanning_error !position)
-		| Parser.Error	-> raise (Syntax_error !position)
+		| Scanner.Error x -> raise (Scanning_error (!position, x))
+		| Parser.Error	  -> raise (Syntax_error !position)
 
 
 let () =
@@ -51,8 +51,8 @@ let () =
 		let out = Printer.sprint css
 		in print_string out
 	with
-		| Scanning_error pos ->
-			Printf.eprintf "Scanning error on line %d.\n" pos.pos_lnum
+		| Scanning_error (pos, x) ->
+			Printf.eprintf "Scanning error on line %d: cannot interpret '%s'.\n" pos.pos_lnum x
 		| Syntax_error pos ->
 			Printf.eprintf "Syntax error on line %d.\n" pos.pos_lnum
 		| Printer.Variable_redeclared (pos, id) ->

@@ -26,7 +26,7 @@ let nelist = function
 %token OPEN_ROUND CLOSE_ROUND
 %token OPEN_SQUARE CLOSE_SQUARE
 %token SEMICOLON COLON DOUBLE_COLON COMMA PERIOD SLASH
-%token ASTERISK PERCENT PLUS MINUS
+%token ASTERISK QUOTIENT PLUS MINUS
 %token TILDE GT EXCLAMATION
 
 %token ATTR_EQUALS
@@ -54,7 +54,7 @@ let nelist = function
 /********************************************************************************/
 
 %left PLUS MINUS
-%left ASTERISK PERCENT
+%left ASTERISK QUOTIENT
 
 
 /********************************************************************************/
@@ -177,7 +177,7 @@ calc:
 	| VAR								{`Varref ($startpos($1), $1)}
 	| QUANTITY							{`Quantity $1}
 	| calc ASTERISK calc						{`Mul ($startpos($2), $1, $3)}
-	| calc PERCENT calc						{`Div ($startpos($2), $1, $3)}
+	| calc QUOTIENT calc						{`Div ($startpos($2), $1, $3)}
 	| calc PLUS calc						{`Sum ($startpos($2), $1, $3)}
 	| calc MINUS calc						{`Sub ($startpos($2), $1, $3)}
 	| OPEN_ROUND calc CLOSE_ROUND					{$2}
