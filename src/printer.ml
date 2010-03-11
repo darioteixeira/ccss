@@ -72,6 +72,47 @@ let string_of_unit = function
 	| None	 -> "a scalar"
 
 
+let find_category =
+	let units = Hashtbl.create 12 in
+	let () =
+		(* The base unit for the `Length category is mm *)
+		Hashtbl.add units "mm" (`Length, Num.Int 1);
+		Hashtbl.add units "cm" (`Length, Num.Int 10);
+		Hashtbl.add units "in" (`Length, Num.Ratio (Ratio.create_ratio (Big_int.big_int_of_int 254) (Big_int.big_int_of_int 10)));
+		Hashtbl.add units "pt" (`Length, Num.Ratio (Ratio.create_ratio (Big_int.big_int_of_int 352778) (Big_int.big_int_of_int 1000000)));
+		Hashtbl.add units "pc" (`Length, Num.Ratio (Ratio.create_ratio (Big_int.big_int_of_int 423333) (Big_int.big_int_of_int 100000)));
+
+		(* The base unit for the `Angle category is deg *)
+		Hashtbl.add units "deg" (`Angle, Num.Int 1);
+		Hashtbl.add units "grad" (`Angle, Num.Ratio (Ratio.create_ratio (Big_int.big_int_of_int 9) (Big_int.big_int_of_int 10)));
+		Hashtbl.add units "rad" (`Angle, Num.Ratio (Ratio.create_ratio (Big_int.big_int_of_int 572958) (Big_int.big_int_of_int 10000)));
+
+		(* The base unit for the `Time category is ms *)
+		Hashtbl.add units "ms" (`Time, Num.Int 1);
+		Hashtbl.add units "s" (`Time, Num.Int 1000);
+
+		(* The base unit for the `Frequency category is hz *)
+		Hashtbl.add units "hz" (`Frequency, Num.Int 1);
+		Hashtbl.add units "khz" (`Frequency, Num.Int 1000);
+	in function
+		| None ->
+			None
+		| Some u ->
+			try Some (Hashtbl.find units u)
+			with Not_found -> None
+		
+
+let normalise_units pos op (num1, u1) (num2, u2) =
+	if u1 = u2
+	then (num1, num2, u1)
+	else match (find_category u1, find_category u2) with
+		| (Some (cat1, fact1), Some (cat2, fact2)) when cat1 = cat2 ->
+			let num2' = Num.div_num (Num.mult_num num2 fact2) fact1
+			in (num1, num2', u1)
+		| _ ->
+			raise (Invalid_units (pos, string_of_op op, string_of_unit u1, string_of_unit u2))
+
+
 (********************************************************************************)
 (**	{2 Main printing functions}						*)
 (********************************************************************************)
@@ -212,14 +253,14 @@ let sprint stylesheet =
 		and (num2, units2) = match expand_calc y with
 			| Numeric (num, units) -> (num, units)
 			| _		       -> raise (Invalid_arithmetic (pos, string_of_op op)) in
-		let units = match (op, units1, units2) with
-			| (Addition, u1, u2) when u1 = u2    -> u1
-			| (Subtraction, u1, u2) when u1 = u2 -> u1
-			| (Multiplication, None, u2)	     -> u2
-			| (Multiplication, u1, None)	     -> u1
-			| (Division, u1, None)		     -> u1
-			| (op, u1, u2)			     -> raise (Invalid_units (pos, string_of_op op, string_of_unit u1, string_of_unit u2))
-		in Numeric (func num1 num2, units)
+		let (num1', num2', units) = match (op, units1, units2) with
+			| (Addition, u1, u2)	     -> normalise_units pos op (num1, u1) (num2, u2)
+			| (Subtraction, u1, u2)	     -> normalise_units pos op (num1, u1) (num2, u2)
+			| (Multiplication, None, u2) -> (num1, num2, u2)
+			| (Multiplication, u1, None) -> (num1, num2, u1)
+			| (Division, u1, None)	     -> (num1, num2, u1)
+			| (op, u1, u2)		     -> raise (Invalid_units (pos, string_of_op op, string_of_unit u1, string_of_unit u2))
+		in Numeric (func num1' num2', units)
 
 	in sprint_stylesheet stylesheet
 

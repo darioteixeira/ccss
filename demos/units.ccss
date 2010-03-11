@@ -1,0 +1,27 @@
+length
+	{
+	foo: 1in + 2.54cm;
+	foo: 1in + 25.4mm;
+	foo: 2.54cm + 1in;
+	foo: 1in + 72pt;
+	foo: 1in + 6pc;
+	}
+
+angle
+	{
+	foo: 0rad + 360deg;
+	foo: 180deg + 3.1415rad;
+	}
+
+time
+	{
+	foo: 1s + 10ms;
+	foo: 500ms + 0.5s;
+	}
+
+frequency
+	{
+	foo: 500hz + 1khz;
+	foo: 0.2khz + 100hz;
+	}
+
