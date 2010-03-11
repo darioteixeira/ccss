@@ -73,7 +73,7 @@ let string_of_unit = function
 
 
 let find_category =
-	let units = Hashtbl.create 12 in
+	let units = Hashtbl.create 14 in
 	let () =
 		(* The base unit for the `Length category is mm *)
 		Hashtbl.add units "mm" (`Length, Num.Int 1);
@@ -93,7 +93,9 @@ let find_category =
 
 		(* The base unit for the `Frequency category is hz *)
 		Hashtbl.add units "hz" (`Frequency, Num.Int 1);
+		Hashtbl.add units "Hz" (`Frequency, Num.Int 1);
 		Hashtbl.add units "khz" (`Frequency, Num.Int 1000);
+		Hashtbl.add units "kHz" (`Frequency, Num.Int 1000);
 	in function
 		| None ->
 			None
