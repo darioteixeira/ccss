@@ -125,5 +125,5 @@ and calc_t =
 	| `Div of Lexing.position * calc_t * calc_t
 	]
 
-and quantity_t = Num.num * string option
+and quantity_t = float * string option
 

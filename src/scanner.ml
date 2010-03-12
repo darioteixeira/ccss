@@ -60,16 +60,12 @@ let rtrim_lexbuf lexbuf =
 
 
 let parse_quantity =
-	let rex = Pcre.regexp "(?<integer>(\\+|-)?[0-9]+)(\\.(?<decimals>[0-9]+))?(?<units>%|[a-z]+)?"
+	let rex = Pcre.regexp "(?<number>(\\+|-)?[0-9]+(\\.[0-9]+)?)(?<units>%|[A-Za-z]+)?"
 	in fun lexbuf ->
 		let subs = Pcre.exec ~rex (Ulexing.utf8_lexeme lexbuf) in
-		let integer = Pcre.get_named_substring rex "integer" subs
-		and decimals = try Pcre.get_named_substring rex "decimals" subs with Not_found -> ""
-		and units = try Some (Pcre.get_named_substring rex "units" subs) with Not_found -> None in
-		let divident = Num.num_of_string (integer ^ decimals)
-		and divisor = Num.num_of_string ("1" ^ (String.make (String.length decimals) '0')) in
-		let number = Num.div_num divident divisor
-		in (number, units)
+		let number = Pcre.get_named_substring rex "number" subs
+		and units = try Some (Pcre.get_named_substring rex "units" subs) with Not_found -> None
+		in (float_of_string number, units)
 
 
 (********************************************************************************)

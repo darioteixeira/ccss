@@ -31,7 +31,7 @@ type operation_t =
 
 
 type calcres_t =
-	| Numeric of Num.num * string option
+	| Numeric of float * string option
 	| Alpha of string
 
 
@@ -54,10 +54,10 @@ let sprint_list ?(filter = false) ?(termin = "") ?(sep = termin) f xs =
 
 
 let func_of_op = function
-	| Addition	 -> Num.add_num
-	| Subtraction	 -> Num.sub_num
-	| Multiplication -> Num.mult_num
-	| Division	 -> Num.div_num
+	| Addition	 -> ( +. )
+	| Subtraction	 -> ( -. )
+	| Multiplication -> ( *. )
+	| Division	 -> ( /. )
 
 
 let string_of_op = function
@@ -76,26 +76,26 @@ let find_category =
 	let units = Hashtbl.create 14 in
 	let () =
 		(* The base unit for the `Length category is mm *)
-		Hashtbl.add units "mm" (`Length, Num.Int 1);
-		Hashtbl.add units "cm" (`Length, Num.Int 10);
-		Hashtbl.add units "in" (`Length, Num.Ratio (Ratio.create_ratio (Big_int.big_int_of_int 254) (Big_int.big_int_of_int 10)));
-		Hashtbl.add units "pt" (`Length, Num.Ratio (Ratio.create_ratio (Big_int.big_int_of_int 352778) (Big_int.big_int_of_int 1000000)));
-		Hashtbl.add units "pc" (`Length, Num.Ratio (Ratio.create_ratio (Big_int.big_int_of_int 423333) (Big_int.big_int_of_int 100000)));
+		Hashtbl.add units "mm" (`Length, 1.0);
+		Hashtbl.add units "cm" (`Length, 10.0);
+		Hashtbl.add units "in" (`Length, 25.4);
+		Hashtbl.add units "pt" (`Length, 0.352778);
+		Hashtbl.add units "pc" (`Length, 4.23333);
 
 		(* The base unit for the `Angle category is deg *)
-		Hashtbl.add units "deg" (`Angle, Num.Int 1);
-		Hashtbl.add units "grad" (`Angle, Num.Ratio (Ratio.create_ratio (Big_int.big_int_of_int 9) (Big_int.big_int_of_int 10)));
-		Hashtbl.add units "rad" (`Angle, Num.Ratio (Ratio.create_ratio (Big_int.big_int_of_int 572958) (Big_int.big_int_of_int 10000)));
+		Hashtbl.add units "deg" (`Angle, 1.0);
+		Hashtbl.add units "grad" (`Angle, 0.9);
+		Hashtbl.add units "rad" (`Angle, 57.2958);
 
 		(* The base unit for the `Time category is ms *)
-		Hashtbl.add units "ms" (`Time, Num.Int 1);
-		Hashtbl.add units "s" (`Time, Num.Int 1000);
+		Hashtbl.add units "ms" (`Time, 1.0);
+		Hashtbl.add units "s" (`Time, 1000.0);
 
 		(* The base unit for the `Frequency category is hz *)
-		Hashtbl.add units "hz" (`Frequency, Num.Int 1);
-		Hashtbl.add units "Hz" (`Frequency, Num.Int 1);
-		Hashtbl.add units "khz" (`Frequency, Num.Int 1000);
-		Hashtbl.add units "kHz" (`Frequency, Num.Int 1000);
+		Hashtbl.add units "hz" (`Frequency, 1.0);
+		Hashtbl.add units "Hz" (`Frequency, 1.0);
+		Hashtbl.add units "khz" (`Frequency, 1000.0);
+		Hashtbl.add units "kHz" (`Frequency, 1000.0);
 	in function
 		| None ->
 			None
@@ -106,7 +106,7 @@ let find_category =
 
 let normalise_units pos op (num1, u1) (num2, u2) = match (find_category u1, find_category u2) with
 	| (Some (cat1, fact1), Some (cat2, fact2)) when cat1 = cat2 ->
-		let num2' = Num.div_num (Num.mult_num num2 fact2) fact1
+		let num2' = (num2 *. fact2) /. fact1
 		in (num1, num2', u1)
 	| _ ->
 		raise (Invalid_units (pos, string_of_op op, string_of_unit u1, string_of_unit u2))
@@ -220,7 +220,7 @@ let sprint convert stylesheet =
 		| `Slash		-> "/"
 
 	and sprint_calc calc = match expand_calc calc with
-		| Numeric (num, units) -> (sprintf "%.4g" (Num.float_of_num num)) ^ (match units with Some s -> s | None -> "")
+		| Numeric (num, units) -> (sprintf "%.4g" num) ^ (match units with Some s -> s | None -> "")
 		| Alpha str	       -> str
 
 	and expand_calc = function
