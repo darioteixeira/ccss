@@ -1,5 +1,5 @@
 =========================================================================
-| README for CCSS 1.0							|
+| README for CCSS 1.1							|
 |									|
 | Dario Teixeira (dario.teixeira@yahoo.com)				|
 | March 2010								|
@@ -70,18 +70,44 @@ h1
 	}
 
 
-The reader will have noticed that CCSS is unit-aware when performing arithmetic.
-In fact, the programme performs a basic sanity check of units, and will complain
-if you try, for example, to add "1em" with "10px".  On the other hand, CCSS is
-also oblivious to the quantities represented by the units, and will also complain
-if you try to add "1cm" with "1mm".
+The reader will have noticed that CCSS must be unit-aware when performing
+arithmetic.  As a matter of fact, the programme performs a basic sanity
+check of units, and will complain if you try, for example, to add "1em" with
+"10px".  By default, CCSS will not make any attempt to convert units even if
+they are convertible, such "cm" and "mm".  If you wish for CCSS to attempt
+unit conversion, please provide option "--convert" on the command line
+(short version "-c").
+
+
+Units can be grouped into four categories, and conversion is possible if the
+units belong to the same category.  Upon conversion, the result will be the
+same unit as the first operand.  The categories and corresponding units are
+as follows:
+
+   length: mm, cm, in, pt, pc
+    angle: deg, grad, rad
+     time: ms, s
+frequency: hz, khz
+
+
+As an illustration of unit conversion, the result for all the following
+arithmetic operations is the same, "2in":
+
+h1
+	{
+	foo1: 1in + 1in;
+	foo2: 1in + 2.54cm;
+	foo3: 1in + 25.4mm;
+	foo4: 1in + 72pt;
+	foo5: 1in + 6pc;
+	}
 
 
 3. Dependencies
 ===============
 
 Menhir is used as the parser generator [1], while scanning is done with Ulex [2].
-Another requirement is Pcre-ocaml [3].
+Other requirements are ExtLib [3] and Pcre-ocaml [4].
 
 
 4. Building and installing
@@ -103,5 +129,6 @@ References
 
 [1] http://cristal.inria.fr/~fpottier/menhir/
 [2] http://www.cduce.org/download.html
-[3] http://www.ocaml.info/home/ocaml_sources.html#pcre-ocaml
+[3] http://code.google.com/p/ocaml-extlib/
+[4] http://www.ocaml.info/home/ocaml_sources.html#pcre-ocaml
 

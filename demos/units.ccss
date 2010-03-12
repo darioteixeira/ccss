@@ -1,8 +1,8 @@
 length
 	{
+	foo: 1in + 1in;
 	foo: 1in + 2.54cm;
 	foo: 1in + 25.4mm;
-	foo: 2.54cm + 1in;
 	foo: 1in + 72pt;
 	foo: 1in + 6pc;
 	}
