@@ -45,10 +45,11 @@ let menhir_with_ulex menhir_parser lexbuf =
 
 
 let () =
-	try
+	let convert = Options.parse ()
+	in try
 		let lexbuf = Ulexing.from_utf8_channel stdin in
 		let css = menhir_with_ulex Parser.stylesheet lexbuf in
-		let out = Printer.sprint css
+		let out = Printer.sprint convert css
 		in print_string out
 	with
 		| Scanning_error (pos, x) ->
@@ -62,5 +63,6 @@ let () =
 		| Printer.Invalid_arithmetic (pos, op) ->
 			Printf.eprintf "Invalid arithmetic in line %d: attempt to %s with non-numeric expression.\n" pos.pos_lnum op
 		| Printer.Invalid_units (pos, op, u1, u2) ->
-			Printf.eprintf "Invalid use of units in line %d: attempt to %s '%s' and '%s'.\n" pos.pos_lnum op u1 u2
+			Printf.eprintf "Invalid use of units in line %d: attempt to %s '%s' and '%s'.\n" pos.pos_lnum op u1 u2;
+			if not convert then Printf.eprintf "Hint: the '--convert' option may be used to attempt unit conversion, where applicable.\n"
 

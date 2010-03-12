@@ -104,22 +104,19 @@ let find_category =
 			with Not_found -> None
 		
 
-let normalise_units pos op (num1, u1) (num2, u2) =
-	if u1 = u2
-	then (num1, num2, u1)
-	else match (find_category u1, find_category u2) with
-		| (Some (cat1, fact1), Some (cat2, fact2)) when cat1 = cat2 ->
-			let num2' = Num.div_num (Num.mult_num num2 fact2) fact1
-			in (num1, num2', u1)
-		| _ ->
-			raise (Invalid_units (pos, string_of_op op, string_of_unit u1, string_of_unit u2))
+let normalise_units pos op (num1, u1) (num2, u2) = match (find_category u1, find_category u2) with
+	| (Some (cat1, fact1), Some (cat2, fact2)) when cat1 = cat2 ->
+		let num2' = Num.div_num (Num.mult_num num2 fact2) fact1
+		in (num1, num2', u1)
+	| _ ->
+		raise (Invalid_units (pos, string_of_op op, string_of_unit u1, string_of_unit u2))
 
 
 (********************************************************************************)
 (**	{2 Main printing functions}						*)
 (********************************************************************************)
 
-let sprint stylesheet =
+let sprint convert stylesheet =
 
 	let variables = Hashtbl.create 32 in
 
@@ -256,12 +253,14 @@ let sprint stylesheet =
 			| Numeric (num, units) -> (num, units)
 			| _		       -> raise (Invalid_arithmetic (pos, string_of_op op)) in
 		let (num1', num2', units) = match (op, units1, units2) with
-			| (Addition, u1, u2)	     -> normalise_units pos op (num1, u1) (num2, u2)
-			| (Subtraction, u1, u2)	     -> normalise_units pos op (num1, u1) (num2, u2)
-			| (Multiplication, None, u2) -> (num1, num2, u2)
-			| (Multiplication, u1, None) -> (num1, num2, u1)
-			| (Division, u1, None)	     -> (num1, num2, u1)
-			| (op, u1, u2)		     -> raise (Invalid_units (pos, string_of_op op, string_of_unit u1, string_of_unit u2))
+			| (Addition, u1, u2) when u1 = u2    -> (num1, num2, u1)
+			| (Addition, u1, u2) when convert    -> normalise_units pos op (num1, u1) (num2, u2)
+			| (Subtraction, u1, u2)	when u1 = u2 -> (num1, num2, u1)
+			| (Subtraction, u1, u2)	when convert -> normalise_units pos op (num1, u1) (num2, u2)
+			| (Multiplication, None, u2)	     -> (num1, num2, u2)
+			| (Multiplication, u1, None)	     -> (num1, num2, u1)
+			| (Division, u1, None)		     -> (num1, num2, u1)
+			| (op, u1, u2)			     -> raise (Invalid_units (pos, string_of_op op, string_of_unit u1, string_of_unit u2))
 		in Numeric (func num1' num2', units)
 
 	in sprint_stylesheet stylesheet
