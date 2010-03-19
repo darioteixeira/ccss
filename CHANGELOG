@@ -1,4 +1,11 @@
 -------------------------
+(2010-03-20) version 1.2:
+
+  * Handling of !important declarations;
+  * More leniency in characters allowed in identifiers;
+  * Allow division of quantities with the same unit (result is scalar);
+
+-------------------------
 (2010-03-12) version 1.1:
 
   * Added support for unit conversion.

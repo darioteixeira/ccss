@@ -27,7 +27,7 @@ let nelist = function
 %token OPEN_SQUARE CLOSE_SQUARE
 %token SEMICOLON COLON DOUBLE_COLON COMMA PERIOD SLASH
 %token ASTERISK QUOTIENT PLUS MINUS
-%token TILDE GT EXCLAMATION
+%token TILDE GT IMPORTANT
 
 %token ATTR_EQUALS
 %token ATTR_INCLUDES
@@ -160,7 +160,7 @@ declaration_block:
 	| OPEN_CURLY declaration+ CLOSE_CURLY				{$2}
 
 declaration:
-	| IDENT COLON expr boption(EXCLAMATION) SEMICOLON		{($1, $3, $4)}
+	| IDENT COLON expr boption(IMPORTANT) SEMICOLON			{($1, $3, $4)}
 
 expr:
 	| separated_nonempty_list(COMMA, sentence)			{$1}

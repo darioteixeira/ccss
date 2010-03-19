@@ -259,6 +259,7 @@ let sprint convert stylesheet =
 			| (Subtraction, u1, u2)	when convert -> normalise_units pos op (num1, u1) (num2, u2)
 			| (Multiplication, None, u2)	     -> (num1, num2, u2)
 			| (Multiplication, u1, None)	     -> (num1, num2, u1)
+			| (Division, u1, u2) when u1 = u2    -> (num1, num2, None)
 			| (Division, u1, None)		     -> (num1, num2, u1)
 			| (op, u1, u2)			     -> raise (Invalid_units (pos, string_of_op op, string_of_unit u1, string_of_unit u2))
 		in Numeric (func num1' num2', units)

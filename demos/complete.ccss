@@ -39,6 +39,10 @@ h1
 
 #main h1[class^="section"] {color: red;}
 
+.doc_par + .doc_par:not(.doc_initial)   {text-indent: 1em;}
+.doc_par.doc_indent:not(.doc_initial)   {text-indent: 2em;}
+.doc_par.doc_noindent                   {text-indent: 0 !important;}
+
 p:nth-child(odd)	{color: black;}
 p:nth-child(even)	{color: black;}
 p:nth-child(2n+1)	{color: black;}

@@ -24,9 +24,9 @@ let regexp alpha = ['a'-'z']
 let regexp digit = ['0'-'9']
 let regexp hexa = ['0'-'9' 'a'-'f']
 let regexp space = [' ' '\t' '\n']
-let regexp ident = ['a'-'z'] ['a'-'z' '0'-'9' '-' '_']*
+let regexp ident = ['a'-'z' '-'] ['A'-'Z' 'a'-'z' '0'-'9' '-' '_']*
 let regexp variable = ['A'-'Z'] ['A'-'Z' 'a'-'z' '0'-'9' '-' '_']*
-let regexp hashed = ['a'-'z' '0'-'9' '-' '_']+
+let regexp hashed = '#' ['A'-'Z' 'a'-'z' '0'-'9' '-' '_']+
 let regexp number = ('-' | '+')? digit+ ('.' digit+)?
 let regexp units = alpha+ | '%'
 let regexp slc = "//" [^ '\n']+
@@ -80,12 +80,13 @@ let rec main_scanner nlines = lexer
 	| number units?			-> (nlines, QUANTITY (parse_quantity lexbuf))
 	| ident				-> (nlines, IDENT (Ulexing.utf8_lexeme lexbuf))
 	| variable			-> (nlines, VAR (Ulexing.utf8_lexeme lexbuf))
-	| '#' hashed			-> (nlines, HASH (ltrim_lexbuf lexbuf))
+	| hashed			-> (nlines, HASH (ltrim_lexbuf lexbuf))
 	| "@charset" space+		-> (add_lines nlines lexbuf, CHARSET)
 	| "@import" space+		-> (add_lines nlines lexbuf, IMPORT)
 	| "@media" space+		-> (add_lines nlines lexbuf, MEDIA)
 	| "@page" space+		-> (add_lines nlines lexbuf, PAGE)
 	| "@font-face" space+		-> (add_lines nlines lexbuf, FONTFACE)
+	| space* "!important" space*	-> (nlines, IMPORTANT)
 	| space* "/*"			-> comment_scanner nlines lexbuf
 	| space* slc space*		-> main_scanner (add_lines nlines lexbuf) lexbuf
 	| "="				-> (nlines, ATTR_EQUALS)
@@ -112,7 +113,6 @@ let rec main_scanner nlines = lexer
 	| '.'				-> (nlines, PERIOD)
 	| '['				-> (nlines, OPEN_SQUARE)
 	| ']'				-> (nlines, CLOSE_SQUARE)
-	| '!'				-> (nlines, EXCLAMATION)
 	| '\''				-> single_string_scanner nlines "" lexbuf
 	| '"'				-> double_string_scanner nlines "" lexbuf
 	| space				-> (add_lines nlines lexbuf, S)
