@@ -122,13 +122,11 @@ let rec main_scanner nlines = lexer
 
 and single_string_scanner nlines accum = lexer
 	| '\''				-> (nlines, STRING accum)
-	| '\\' _			-> single_string_scanner (add_lines nlines lexbuf) (accum ^ (Ulexing.utf8_sub_lexeme lexbuf 1 1)) lexbuf
 	| _				-> single_string_scanner (add_lines nlines lexbuf) (accum ^ (Ulexing.utf8_lexeme lexbuf)) lexbuf
 
 
 and double_string_scanner nlines accum = lexer
 	| '"'				-> (nlines, STRING accum)
-	| '\\' _			-> double_string_scanner (add_lines nlines lexbuf) (accum ^ (Ulexing.utf8_sub_lexeme lexbuf 1 1)) lexbuf
 	| _				-> double_string_scanner (add_lines nlines lexbuf) (accum ^ (Ulexing.utf8_lexeme lexbuf)) lexbuf
 
 
