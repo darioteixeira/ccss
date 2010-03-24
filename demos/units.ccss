@@ -25,3 +25,13 @@ frequency
 	foo: 0.2khz + 100hz;
 	}
 
+corner-cases
+	{
+	foo: 2in + 0;
+	foo: 2in - 0;
+	foo: 0 + 2in;
+	foo: 0 - 2in;
+	foo: 4in ÷ 2in;
+	foo: 2 * 1in;
+	}
+
