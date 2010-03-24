@@ -63,6 +63,6 @@ let () =
 		| Printer.Invalid_arithmetic (pos, op) ->
 			Printf.eprintf "Invalid arithmetic in line %d: attempt to %s with non-numeric expression.\n" pos.pos_lnum op
 		| Printer.Invalid_units (pos, op, u1, u2) ->
-			Printf.eprintf "Invalid use of units in line %d: attempt to %s '%s' and '%s'.\n" pos.pos_lnum op u1 u2;
+			Printf.eprintf "Invalid use of units in line %d: attempt to %s %s and %s.\n" pos.pos_lnum op u1 u2;
 			if not convert then Printf.eprintf "Hint: the '--convert' option may be used to attempt unit conversion, where applicable.\n"
 

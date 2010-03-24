@@ -68,7 +68,7 @@ let string_of_op = function
 
 
 let string_of_unit = function
-	| Some u -> u
+	| Some u -> "'" ^ u ^ "'"
 	| None	 -> "a scalar"
 
 
@@ -253,15 +253,19 @@ let sprint convert stylesheet =
 			| Numeric (num, units) -> (num, units)
 			| _		       -> raise (Invalid_arithmetic (pos, string_of_op op)) in
 		let (num1', num2', units) = match (op, units1, units2) with
-			| (Addition, u1, u2) when u1 = u2    -> (num1, num2, u1)
-			| (Addition, u1, u2) when convert    -> normalise_units pos op (num1, u1) (num2, u2)
-			| (Subtraction, u1, u2)	when u1 = u2 -> (num1, num2, u1)
-			| (Subtraction, u1, u2)	when convert -> normalise_units pos op (num1, u1) (num2, u2)
-			| (Multiplication, None, u2)	     -> (num1, num2, u2)
-			| (Multiplication, u1, None)	     -> (num1, num2, u1)
-			| (Division, u1, u2) when u1 = u2    -> (num1, num2, None)
-			| (Division, u1, None)		     -> (num1, num2, u1)
-			| (op, u1, u2)			     -> raise (Invalid_units (pos, string_of_op op, string_of_unit u1, string_of_unit u2))
+			| (Addition, u1, u2) when u1 = u2	  -> (num1, num2, u1)
+			| (Addition, u1, None) when num2 = 0.0	  -> (num1, num2, u1)
+			| (Addition, None, u2) when num1 = 0.0	  -> (num1, num2, u2)
+			| (Addition, u1, u2) when convert	  -> normalise_units pos op (num1, u1) (num2, u2)
+			| (Subtraction, u1, u2)	when u1 = u2	  -> (num1, num2, u1)
+			| (Subtraction, u1, None) when num2 = 0.0 -> (num1, num2, u1)
+			| (Subtraction, None, u2) when num1 = 0.0 -> (num1, num2, u2)
+			| (Subtraction, u1, u2)	when convert	  -> normalise_units pos op (num1, u1) (num2, u2)
+			| (Multiplication, None, u2)		  -> (num1, num2, u2)
+			| (Multiplication, u1, None)		  -> (num1, num2, u1)
+			| (Division, u1, u2) when u1 = u2	  -> (num1, num2, None)
+			| (Division, u1, None)			  -> (num1, num2, u1)
+			| (op, u1, u2)				  -> raise (Invalid_units (pos, string_of_op op, string_of_unit u1, string_of_unit u2))
 		in Numeric (func num1' num2', units)
 
 	in sprint_stylesheet stylesheet
