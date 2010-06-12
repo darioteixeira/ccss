@@ -100,7 +100,7 @@ let rec main_scanner nlines = lexer
 	| space* 247 space*		-> (add_lines nlines lexbuf, QUOTIENT)	(* 247 is the decimal Unicode codepoint for the division sign *)
 	| space* '/' space*		-> (add_lines nlines lexbuf, SLASH)
 	| space* '+' space*		-> (add_lines nlines lexbuf, PLUS)
-	| space* '-' space*		-> (add_lines nlines lexbuf, MINUS)
+	| space+ '-' space+		-> (add_lines nlines lexbuf, MINUS)
 	| space* '~' space*		-> (add_lines nlines lexbuf, TILDE)
 	| space* '>' space*		-> (add_lines nlines lexbuf, GT)
 	| space* '{' space*		-> (add_lines nlines lexbuf, OPEN_CURLY)
