@@ -1,4 +1,0 @@
-true:use_menhir, pkg_extlib, pkg_ulex, pkg_pcre, pkg_menhirLib
-
-<scanner.ml>: pkg_ulex, syntax_camlp4o
-

@@ -1,0 +1,22 @@
+OASISFormat:	0.3
+Name:		CCSS
+Version:	1.3
+Synopsis:	Preprocessor for CSS (Cascading Style Sheets)
+Authors:	Dario Teixeira
+Homepage:	http://ccss.forge.ocamlcore.org/
+License:	GPL-2
+Plugins:	META (0.3), DevFiles (0.3)
+Description:
+  CCSS is a preprocessor for CSS (Cascading Style Sheets), extending the
+  language with arithmetic operations and variables. It includes a fairly
+  complete CSS parser and lexer, and thus other language extensions may be
+  easily added in the future.
+
+Executable "ccss"
+  Path:			src
+  MainIs:		ccss.ml
+  Install:		true
+  BuildTools:		ocamlbuild, menhir
+  BuildDepends:		batteries, ulex, pcre, menhirLib
+  CompiledObject:	best
+
