@@ -50,6 +50,10 @@ p:nth-child(2n-1)	{color: black;}
 p:nth-child(-2n-1)	{color: black;}
 
 h1 {background: url('image.png') no-repeat;}
+h2 {background: url('image.png') 0 0 no-repeat;}
+h3 {background-position: left top;}
+h3 {background-position: left 1px;}
+h3 {background-position: 0 -1px;}
 
 h1 {width: 10em + 20em;}				// Should equal 30em
 h1 {width: (10em + 20em) ÷ 2;}				// Should equal 15em
