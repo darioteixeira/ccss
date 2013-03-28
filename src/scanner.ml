@@ -27,6 +27,9 @@ let regexp space = [' ' '\t' '\n']
 let regexp ident = ['a'-'z' '-'] ['A'-'Z' 'a'-'z' '0'-'9' '-' '_']*
 let regexp variable = ['A'-'Z'] ['A'-'Z' 'a'-'z' '0'-'9' '-' '_']*
 let regexp hashed = '#' ['A'-'Z' 'a'-'z' '0'-'9' '-' '_']+
+let regexp urange_hexa = ['0'-'9' 'a'-'f' 'A'-'F']
+let regexp urange_num = (urange_hexa+ '?'* ) | ('?'+)
+let regexp urange = ('u' | 'U') '+' urange_num ('-' urange_num)?
 let regexp number = ('-' | '+')? digit+ ('.' digit+)?
 let regexp units = alpha+ | '%'
 let regexp slc = "//" [^ '\n']+
@@ -74,6 +77,7 @@ let parse_quantity =
 
 let rec main_scanner nlines = lexer
 	| "url("			-> (nlines, URI)
+	| urange			-> (nlines, URANGE (Ulexing.utf8_lexeme lexbuf))
 	| ident '('			-> (nlines, TERM_FUNC (rtrim_lexbuf lexbuf))
 	| ':' ident '('			-> (nlines, SEL_FUNC (trim_lexbuf ~right:1 ~left:1 lexbuf))
 	| nth				-> (nlines, NTH (Ulexing.utf8_lexeme lexbuf))

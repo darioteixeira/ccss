@@ -41,6 +41,7 @@ let nelist = function
 %token <string> IDENT
 %token <string> NTH
 %token <string> HASH
+%token <string> URANGE
 %token <string> VAR
 
 %token <string> SEL_FUNC
@@ -174,6 +175,7 @@ term:
 	| IDENT								{`Ident $1}
 	| URI STRING CLOSE_ROUND					{`Uri $2}
 	| HASH								{`Hash $1}
+	| URANGE							{`Urange $1}
 	| TERM_FUNC expr CLOSE_ROUND					{`Term_func ($1, $2)}
 	| SLASH								{`Slash}
 

@@ -112,6 +112,7 @@ and term_t =
 	| `Ident of string
 	| `Uri of string
 	| `Hash of string
+	| `Urange of string
 	| `Term_func of string * expression_t
 	| `Slash
 	]

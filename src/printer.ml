@@ -216,6 +216,7 @@ let sprint convert stylesheet =
 		| `Ident str		-> str
 		| `Uri str		-> sprintf "url(\"%s\")" str
 		| `Hash str		-> "#" ^ str
+		| `Urange str		-> str
 		| `Term_func (f, expr)	-> sprintf "%s(%s)" f (sprint_expression expr)
 		| `Slash		-> "/"
 
