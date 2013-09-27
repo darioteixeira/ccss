@@ -60,6 +60,10 @@ let () =
 			Printf.eprintf "Attempt to redefine variable '%s' in line %d.\n" id pos.pos_lnum
 		| Printer.Variable_undeclared (pos, id) ->
 			Printf.eprintf "Variable '%s' referenced in line %d has not been declared.\n" id pos.pos_lnum
+		| Printer.Expected_mixin_over_expression (pos, id) ->
+			Printf.eprintf "In line %d, variable '%s' refers to an expression, but a mixin was expected in this context.\n" pos.pos_lnum id
+		| Printer.Expected_expression_over_mixin (pos, id) ->
+			Printf.eprintf "In line %d, variable '%s' refers to a mixin, but an expression was expected in this context.\n" pos.pos_lnum id
 		| Printer.Invalid_arithmetic (pos, op) ->
 			Printf.eprintf "Invalid arithmetic in line %d: attempt to %s with non-numeric expression.\n" pos.pos_lnum op
 		| Printer.Invalid_units (pos, op, u1, u2) ->

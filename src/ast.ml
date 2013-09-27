@@ -26,7 +26,7 @@ and statement_t =
 	| `Media of medium_t list * rule_t list
 	| `Page of pseudo_page_t option * declaration_t list
 	| `Fontface of declaration_t list
-	| `Vardecl of Lexing.position * variable_t * expression_t
+	| `Vardecl of variable_t * vardecl_t
 	| `Rule of rule_t
 	]
 
@@ -37,7 +37,12 @@ and source_t =
 
 and medium_t = string
 
-and variable_t = string
+and variable_t = Lexing.position * string
+
+and vardecl_t =
+	[ `Expr of expression_t
+	| `Mixin of declaration_t list
+	]
 
 and rule_t = selector_t list * declaration_t list
 
@@ -96,7 +101,10 @@ and attr_t =
 (**	{2 Declarations}							*)
 (********************************************************************************)
 
-and declaration_t = property_t * expression_t * important_t
+and declaration_t =
+	[ `Property of property_t * expression_t * important_t
+	| `Varref of variable_t
+	]
 
 and property_t = string
 
@@ -118,7 +126,7 @@ and term_t =
 	]
 
 and calc_t =
-	[ `Varref of Lexing.position * variable_t
+	[ `Varref of variable_t
 	| `Quantity of quantity_t
 	| `Sum of Lexing.position * calc_t * calc_t
 	| `Sub of Lexing.position * calc_t * calc_t

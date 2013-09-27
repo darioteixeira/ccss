@@ -1,6 +1,6 @@
 OASISFormat:	0.3
 Name:		CCSS
-Version:	1.3
+Version:	1.4
 Synopsis:	Preprocessor for CSS (Cascading Style Sheets)
 Authors:	Dario Teixeira
 Homepage:	http://ccss.forge.ocamlcore.org/

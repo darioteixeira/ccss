@@ -15,6 +15,8 @@ open Printf
 
 exception Variable_redeclared of Lexing.position * string
 exception Variable_undeclared of Lexing.position * string
+exception Expected_mixin_over_expression of Lexing.position * string
+exception Expected_expression_over_mixin of Lexing.position * string
 exception Invalid_arithmetic of Lexing.position * string
 exception Invalid_units of Lexing.position * string * string * string
 
@@ -143,10 +145,10 @@ let sprint convert stylesheet =
 		| `Fontface declarations ->
 			sprintf "@font-face\n\t{\n%s\t}"
 				(sprint_list ~termin:"\n" sprint_declaration declarations)
-		| `Vardecl (pos, id, expression) ->
+		| `Vardecl ((pos, id), vardecl) ->
 			if Hashtbl.mem variables id
 			then raise (Variable_redeclared (pos, id))
-			else Hashtbl.add variables id expression; ""
+			else Hashtbl.add variables id vardecl; ""
 		| `Rule rule ->
 			sprint_rule rule
 
@@ -201,8 +203,16 @@ let sprint convert stylesheet =
 		| `Attr_suffix v    -> "$=" ^ "\"" ^ v ^ "\""
 		| `Attr_substring v -> "*=" ^ "\"" ^ v ^ "\""
 
-	and sprint_declaration (property, expression, important) =
-		sprintf "\t%s: %s%s;" property (sprint_expression expression) (if important then " !important" else "")
+	and sprint_declaration = function
+		| `Property (property, expression, important) ->
+			sprintf "\t%s: %s%s;" property (sprint_expression expression) (if important then " !important" else "")
+		| `Varref (pos, id) ->
+			try
+				match Hashtbl.find variables id with
+					| `Mixin declarations -> sprint_list ~sep:"\n" sprint_declaration declarations
+					| `Expr _	      -> raise (Expected_mixin_over_expression (pos, id))
+			with
+				Not_found -> raise (Variable_undeclared (pos, id))
 
 	and sprint_expression expression =
 		sprint_list ~sep:", " sprint_sentence expression
@@ -229,8 +239,9 @@ let sprint convert stylesheet =
 			begin
 				try
 					match Hashtbl.find variables id with
-						| [[`Calc calc]] -> expand_calc calc
-						| expression -> Alpha (sprint_expression expression)
+						| `Expr [[`Calc calc]] -> expand_calc calc
+						| `Expr expression     -> Alpha (sprint_expression expression)
+						| `Mixin _	       -> raise (Expected_expression_over_mixin (pos, id))
 				with
 					Not_found -> raise (Variable_undeclared (pos, id))
 			end

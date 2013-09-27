@@ -79,8 +79,12 @@ statement:
 	| MEDIA media_list OPEN_CURLY rule+ CLOSE_CURLY			{`Media ($2, $4)}
 	| PAGE pseudo_page? declaration_block				{`Page ($2, $3)}
 	| FONTFACE declaration_block					{`Fontface $2}
-	| VAR COLON expr SEMICOLON					{`Vardecl ($startpos($1), $1, $3)}
+	| VAR COLON var_decl						{`Vardecl (($startpos($1), $1), $3)}
 	| rule								{`Rule $1}
+
+var_decl:
+	| expr SEMICOLON						{`Expr $1}
+	| declaration_block						{`Mixin $1}
 
 source:
 	| STRING							{`String $1}
@@ -161,7 +165,8 @@ declaration_block:
 	| OPEN_CURLY declaration+ CLOSE_CURLY				{$2}
 
 declaration:
-	| IDENT COLON expr boption(IMPORTANT) SEMICOLON			{($1, $3, $4)}
+	| IDENT COLON expr boption(IMPORTANT) SEMICOLON			{`Property ($1, $3, $4)}
+	| VAR SEMICOLON							{`Varref ($startpos($1), $1)}
 
 expr:
 	| separated_nonempty_list(COMMA, sentence)			{$1}

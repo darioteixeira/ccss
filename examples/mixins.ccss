@@ -1,0 +1,39 @@
+Clearfix:
+	{
+	display: block;
+	clear: both;
+	content: '';
+	height: 0;
+	visibility: hidden;
+	}
+
+Clearfix_clone: {Clearfix;}
+
+Light_colour:	#ccc;
+Dark_colour:	#333;
+
+Normal_scheme:
+	{
+	color: Dark_colour;
+	background: Light_colour;
+	}
+
+Inverse_scheme:
+	{
+	color: Light_colour;
+	background: Dark_colour;
+	}
+
+.alpha
+	{
+	Clearfix;
+	Normal_scheme;
+	}
+
+.beta
+	{
+	font-weight: bold;
+	Inverse_scheme;
+	Clearfix_clone;
+	}
+

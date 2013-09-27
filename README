@@ -1,8 +1,8 @@
 =========================================================================
-| README for CCSS 1.3							|
+| README for CCSS 1.4							|
 |									|
 | Dario Teixeira (dario.teixeira@yahoo.com)				|
-| September 2012							|
+| September 2013							|
 =========================================================================
 
 1. Overview
@@ -18,15 +18,19 @@ from stdin and outputs its result on stdout.
 2. Features
 ===========
 
-2.1. Variables
-==============
+2.1. Variables for expressions and mixins
+=========================================
 
 With CCSS, you may declare and use variables in your CSS code (in fact, CCSS
 variables are actually constants, since they are assigned upon declaration and
 may not be changed).  Variable identifiers must begin with an uppercase letter,
 and be followed by any combination of letters, numbers, and the characters
-'-' (dash) and '_' (underscore).  The value assigned to a variable may be
-any CSS expression -- not only quantities -- as the code below demonstrates:
+'-' (dash) and '_' (underscore).
+
+There are two use cases for variables.  The first consists in assigning any
+CSS expression (not only quantities) to a variable.  The assigned expression
+can subsequently be referenced by the variable identifier.  The code below
+demonstrates this situation:
 
 Foo: 20em;
 Bar: 1px solid black;
@@ -34,6 +38,23 @@ Bar: 1px solid black;
 h1	{
 	width: Foo;
 	border: Bar;
+	}
+
+
+The second use of variables is to declare mixins, ie, declaration blocks
+that can be included within subsequent declaration blocks.  The code below
+illustrates the use of mixins:
+
+Inverse_scheme:
+	{
+	color: #fff;
+	background: #000;
+	}
+
+h1
+	{
+	Inverse_scheme;
+	font-weight: bold;
 	}
 
 
@@ -78,17 +99,15 @@ they are convertible, such "cm" and "mm".  If you wish for CCSS to attempt
 unit conversion, please provide option "--convert" on the command line
 (short version "-c").
 
-
 Units can be grouped into four categories, and conversion is possible if the
 units belong to the same category.  Upon conversion, the result will be the
 same unit as the first operand.  The categories and corresponding units are
 as follows:
 
-   length: mm, cm, in, pt, pc
-    angle: deg, grad, rad
-     time: ms, s
-frequency: hz, khz
-
+     length: mm, cm, in, pt, pc
+      angle: deg, grad, rad
+       time: ms, s
+  frequency: hz, khz
 
 As an illustration of unit conversion, the result for all the following
 arithmetic operations is the same, "2in":
