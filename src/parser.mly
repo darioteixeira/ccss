@@ -20,7 +20,12 @@ let nelist = function
 %token EOF
 %token S
 
-%token CHARSET IMPORT MEDIA PAGE FONTFACE
+%token <string option> CHARSET
+%token <string option> IMPORT
+%token <string option> MEDIA
+%token <string option> PAGE
+%token <string option> FONTFACE
+%token <string option> KEYFRAMES
 
 %token OPEN_CURLY CLOSE_CURLY
 %token OPEN_ROUND CLOSE_ROUND
@@ -69,18 +74,23 @@ let nelist = function
 %%
 
 stylesheet:
-	| S* charset? statement* EOF					{($2, $3)}
-
-charset:
-	| CHARSET STRING SEMICOLON					{$2}
+	| S* statement* EOF						{$2}
 
 statement:
-	| IMPORT source S? media_list? SEMICOLON			{`Import ($2, $4)}
-	| MEDIA media_list OPEN_CURLY rule+ CLOSE_CURLY			{`Media ($2, $4)}
-	| PAGE pseudo_page? declaration_block				{`Page ($2, $3)}
-	| FONTFACE declaration_block					{`Fontface $2}
-	| VAR COLON var_decl						{`Vardecl (($startpos($1), $1), $3)}
+	| atrule							{`Atrule $1}
 	| rule								{`Rule $1}
+	| VAR COLON var_decl						{`Vardecl (($startpos($1), $1), $3)}
+
+atrule:
+	| CHARSET STRING SEMICOLON					{($1, `Charset $2)}
+	| IMPORT source S? media_list? SEMICOLON			{($1, `Import ($2, $4))}
+	| MEDIA media_list OPEN_CURLY rule+ CLOSE_CURLY			{($1, `Media ($2, $4))}
+	| PAGE pseudo_page? declaration_block				{($1, `Page ($2, $3))}
+	| FONTFACE declaration_block					{($1, `Fontface $2)}
+	| KEYFRAMES IDENT OPEN_CURLY keyframe_block+ CLOSE_CURLY	{($1, `Keyframes ($2, $4))}
+
+rule:
+	| selector_list declaration_block				{($1, $2)}
 
 var_decl:
 	| expr SEMICOLON						{`Expr $1}
@@ -99,8 +109,12 @@ medium:
 pseudo_page:
 	| COLON IDENT							{$2}
 
-rule:
-	| selector_list declaration_block				{($1, $2)}
+keyframe_block:
+	| keyframe_sel declaration_block				{($1, $2)}
+
+keyframe_sel:
+	| IDENT								{`Ident $1}
+	| calc								{`Calc $1}
 
 
 /********************************************************************************/

@@ -17,18 +17,24 @@
 (**	{2 Top-level statements}						*)
 (********************************************************************************)
 
-type t = charset_t option * statement_t list
-
-and charset_t = string
+type t = statement_t list
 
 and statement_t =
-	[ `Import of source_t * medium_t list option
+	[ `Atrule of prefix_t option * atrule_t
+	| `Rule of rule_t
+	| `Vardecl of variable_t * vardecl_t
+	]
+
+and atrule_t =
+	[ `Charset of string
+	| `Import of source_t * medium_t list option
 	| `Media of medium_t list * rule_t list
 	| `Page of pseudo_page_t option * declaration_t list
 	| `Fontface of declaration_t list
-	| `Vardecl of variable_t * vardecl_t
-	| `Rule of rule_t
+	| `Keyframes of string * keyframe_block_t list
 	]
+
+and prefix_t = string
 
 and source_t =
 	[ `String of string
@@ -37,16 +43,23 @@ and source_t =
 
 and medium_t = string
 
+and pseudo_page_t = string
+
+and keyframe_block_t = keyframe_sel_t * declaration_t list
+
+and keyframe_sel_t =
+	[ `Ident of string
+	| `Calc of calc_t
+	]
+
+and rule_t = selector_t list * declaration_t list
+
 and variable_t = Lexing.position * string
 
 and vardecl_t =
 	[ `Expr of expression_t
 	| `Mixin of declaration_t list
 	]
-
-and rule_t = selector_t list * declaration_t list
-
-and pseudo_page_t = string
 
 
 (********************************************************************************)

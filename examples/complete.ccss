@@ -1,3 +1,5 @@
+@charset "utf-8";
+
 /********************************************************************************/
 /* Complete test of CCSS.  Note that the CSS herein contained is nonsensical,	*/
 /* and is aimed solely at testing various features of the CSS lexer/parser.	*/

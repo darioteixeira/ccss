@@ -122,35 +122,47 @@ let sprint convert stylesheet =
 
 	let variables = Hashtbl.create 32 in
 
-	let rec sprint_stylesheet (maybe_charset, statements) =
-		let str1 = match maybe_charset with
-			| Some charset -> sprintf "@charset \"%s\"" charset
-			| None	       -> ""
-		and str2 = sprint_list ~filter:true ~termin:"\n\n" sprint_statement statements
-		in str1 ^ str2
+	let rec sprint_stylesheet statements =
+		sprint_list ~filter:true ~termin:"\n\n" sprint_statement statements
 
 	and sprint_statement = function
-		| `Import (source, maybe_media) ->
-			sprintf "@import %s%s;"
-				(sprint_source source)
-				(match maybe_media with None -> "" | Some media -> " " ^ (sprint_media media))
-		| `Media (media, rules) ->
-			sprintf "@media %s\n{\n%s}"
-				(sprint_media media)
-				(sprint_list ~termin:"\n" sprint_rule rules)
-		| `Page (pseudo_page, declarations) ->
-			sprintf "@page %s\n\t{\n%s\t}"
-				(match pseudo_page with None -> "" | Some x -> ":" ^ x)
-				(sprint_list ~termin:"\n" sprint_declaration declarations)
-		| `Fontface declarations ->
-			sprintf "@font-face\n\t{\n%s\t}"
-				(sprint_list ~termin:"\n" sprint_declaration declarations)
+		| `Atrule (prefix, atrule) ->
+			sprint_atrule prefix atrule
+		| `Rule rule ->
+			sprint_rule rule
 		| `Vardecl ((pos, id), vardecl) ->
 			if Hashtbl.mem variables id
 			then raise (Variable_redeclared (pos, id))
 			else Hashtbl.add variables id vardecl; ""
-		| `Rule rule ->
-			sprint_rule rule
+
+	and sprint_atrule prefix atrule =
+		let prefix_str = match prefix with
+			| Some p -> "-" ^ p ^ "-"
+			| None	 -> ""
+		and sprint_aux = function
+			| `Charset charset ->
+				sprintf "charset \"%s\";"
+					charset
+			| `Import (source, maybe_media) ->
+				sprintf "import %s%s;"
+					(sprint_source source)
+					(match maybe_media with None -> "" | Some media -> " " ^ (sprint_media media))
+			| `Media (media, rules) ->
+				sprintf "media %s\n{\n%s}"
+					(sprint_media media)
+					(sprint_list ~termin:"\n" sprint_rule rules)
+			| `Page (pseudo_page, declarations) ->
+				sprintf "page %s\n\t{\n%s\t}"
+					(match pseudo_page with None -> "" | Some x -> ":" ^ x)
+					(sprint_list ~termin:"\n" (sprint_declaration ~nest:1) declarations)
+			| `Fontface declarations ->
+				sprintf "font-face\n\t{\n%s\t}"
+					(sprint_list ~termin:"\n" (sprint_declaration ~nest:2) declarations)
+			| `Keyframes (id, blocks) ->
+				sprintf "keyframes %s\n\t{\n%s\t}"
+					id
+					(sprint_list sprint_keyframe_block blocks)
+		in "@" ^ prefix_str ^ sprint_aux atrule
 
 	and sprint_source = function
 		| `String s -> sprintf "\"%s\"" s
@@ -160,7 +172,16 @@ let sprint convert stylesheet =
 		sprint_list ~sep:", " (fun x -> x) media
 
 	and sprint_rule (selectors, declarations) =
-		sprintf "%s\n\t{\n%s\t}" (sprint_list ~sep:", " sprint_selector selectors) (sprint_list ~termin:"\n" sprint_declaration declarations)
+		sprintf "%s\n\t{\n%s\t}"
+			(sprint_list ~sep:", " sprint_selector selectors)
+			(sprint_list ~termin:"\n" (sprint_declaration ~nest:1) declarations)
+
+	and sprint_keyframe_block (sel, declarations) =
+		sprintf "\t%s\n\t\t{\n%s\t\t}\n" (sprint_keyframe_sel sel) (sprint_list ~termin:"\n" (sprint_declaration ~nest:2) declarations)
+
+	and sprint_keyframe_sel = function
+		| `Ident s -> s
+		| `Calc x  -> sprint_calc x
 
 	and sprint_selector (simplesel, combinations) =
 		(sprint_simplesel simplesel) ^ (sprint_list sprint_combination combinations)
@@ -203,13 +224,13 @@ let sprint convert stylesheet =
 		| `Attr_suffix v    -> "$=" ^ "\"" ^ v ^ "\""
 		| `Attr_substring v -> "*=" ^ "\"" ^ v ^ "\""
 
-	and sprint_declaration = function
+	and sprint_declaration ~nest = function
 		| `Property (property, expression, important) ->
-			sprintf "\t%s: %s%s;" property (sprint_expression expression) (if important then " !important" else "")
+			sprintf "%s%s: %s%s;" (String.make nest '\t') property (sprint_expression expression) (if important then " !important" else "")
 		| `Varref (pos, id) ->
 			try
 				match Hashtbl.find variables id with
-					| `Mixin declarations -> sprint_list ~sep:"\n" sprint_declaration declarations
+					| `Mixin declarations -> sprint_list ~sep:"\n" (sprint_declaration ~nest) declarations
 					| `Expr _	      -> raise (Expected_mixin_over_expression (pos, id))
 			with
 				Not_found -> raise (Variable_undeclared (pos, id))
