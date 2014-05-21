@@ -1,4 +1,10 @@
 -------------------------
+(2014-05-21) version 1.5:
+
+  * Support for @keyframes (CSS animations).
+  * Minor grammar simplification: @charset now lumped with other at-rules.
+
+-------------------------
 (2013-09-27) version 1.4:
 
   * Support for mixins.
