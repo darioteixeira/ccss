@@ -43,9 +43,30 @@ let menhir_with_ulex menhir_parser lexbuf =
 		| Scanner.Error x -> raise (Scanning_error (!position, x))
 		| Parser.Error	  -> raise (Syntax_error !position)
 
-let die s =
-	output_string stderr s;
-	exit 1
+
+let string_of_exc convert = function
+	| Scanning_error (pos, x) ->
+		Printf.sprintf "Scanning error on line %d: cannot interpret '%s'.\n" pos.pos_lnum x
+	| Syntax_error pos ->
+		Printf.sprintf "Syntax error on line %d.\n" pos.pos_lnum
+	| Printer.Variable_redeclared (pos, id) ->
+		Printf.sprintf "Attempt to redefine variable '%s' in line %d.\n" id pos.pos_lnum
+	| Printer.Variable_undeclared (pos, id) ->
+		Printf.sprintf "Variable '%s' referenced in line %d has not been declared.\n" id pos.pos_lnum
+	| Printer.Expected_mixin_over_expression (pos, id) ->
+		Printf.sprintf "In line %d, variable '%s' refers to an expression, but a mixin was expected in this context.\n" pos.pos_lnum id
+	| Printer.Expected_expression_over_mixin (pos, id) ->
+		Printf.sprintf "In line %d, variable '%s' refers to a mixin, but an expression was expected in this context.\n" pos.pos_lnum id
+	| Printer.Invalid_arithmetic (pos, op) ->
+		Printf.sprintf "Invalid arithmetic in line %d: attempt to %s with non-numeric expression.\n" pos.pos_lnum op
+	| Printer.Invalid_units (pos, op, u1, u2) ->
+		let error = Printf.sprintf "Invalid use of units in line %d: attempt to %s %s and %s.\n" pos.pos_lnum op u1 u2 in
+		if convert
+		then error
+		else Printf.sprintf "%s\nHint: the '--convert' option may be used to attempt unit conversion, where applicable.\n" error
+	| exc ->
+		Printexc.to_string exc
+
 
 let () =
 	let convert = Options.parse ()
@@ -54,23 +75,8 @@ let () =
 		let css = menhir_with_ulex Parser.stylesheet lexbuf in
 		let out = Printer.sprint convert css
 		in print_string out
-	with
-		| Scanning_error (pos, x) ->
-			Printf.sprintf "Scanning error on line %d: cannot interpret '%s'.\n" pos.pos_lnum x |> die
-		| Syntax_error pos ->
-			Printf.sprintf "Syntax error on line %d.\n" pos.pos_lnum |> die
-		| Printer.Variable_redeclared (pos, id) ->
-			Printf.sprintf "Attempt to redefine variable '%s' in line %d.\n" id pos.pos_lnum |> die
-		| Printer.Variable_undeclared (pos, id) ->
-			Printf.sprintf "Variable '%s' referenced in line %d has not been declared.\n" id pos.pos_lnum |> die
-		| Printer.Expected_mixin_over_expression (pos, id) ->
-			Printf.sprintf "In line %d, variable '%s' refers to an expression, but a mixin was expected in this context.\n" pos.pos_lnum id |> die
-		| Printer.Expected_expression_over_mixin (pos, id) ->
-			Printf.sprintf "In line %d, variable '%s' refers to a mixin, but an expression was expected in this context.\n" pos.pos_lnum id |> die
-		| Printer.Invalid_arithmetic (pos, op) ->
-			Printf.sprintf "Invalid arithmetic in line %d: attempt to %s with non-numeric expression.\n" pos.pos_lnum op |> die
-		| Printer.Invalid_units (pos, op, u1, u2) ->
-			let error = Printf.sprintf "Invalid use of units in line %d: attempt to %s %s and %s.\n" pos.pos_lnum op u1 u2 in
-			let error = if not convert then Printf.sprintf "%s\nHint: the '--convert' option may be used to attempt unit conversion, where applicable.\n" error else error in
-			die error
+	with exc ->
+		let msg = string_of_exc convert exc in
+		output_string stderr msg;
+		exit 1
 
