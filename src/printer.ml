@@ -143,13 +143,13 @@ let sprint convert stylesheet =
             | `Charset charset ->
                 sprintf "charset \"%s\";"
                     charset
-            | `Import (source, maybe_media) ->
+            | `Import (source, maybe_media_queries) ->
                 sprintf "import %s%s;"
                     (sprint_source source)
-                    (match maybe_media with None -> "" | Some media -> " " ^ (sprint_media media))
-            | `Media (media, rules) ->
+                    (match maybe_media_queries with None -> "" | Some xs -> " " ^ (sprint_media_queries xs))
+            | `Media (media_queries, rules) ->
                 sprintf "media %s\n{\n%s}"
-                    (sprint_media media)
+                    (sprint_media_queries media_queries)
                     (sprint_list ~termin:"\n" sprint_rule rules)
             | `Page (pseudo_page, declarations) ->
                 sprintf "page %s\n\t{\n%s\t}"
@@ -168,8 +168,21 @@ let sprint convert stylesheet =
         | `String s -> sprintf "\"%s\"" s
         | `Uri s    -> sprintf "url(\"%s\")" s
 
-    and sprint_media media =
-        sprint_list ~sep:", " (fun x -> x) media
+    and sprint_media_queries xs =
+        let sprint_media_type = function
+            | (Some prefix, medium) -> (match prefix with `Only -> "only" | `Not -> "not") ^ " " ^ medium
+            | (None, medium)        -> medium in
+        let sprint_media_expression (medium, maybe_sentence) =
+            let sentence' = match maybe_sentence with
+                | None          -> ""
+                | Some sentence -> ": " ^ sprint_sentence sentence
+            in "(" ^ medium ^ sentence' ^ ")" in
+        let sprint_media_expressions xs = sprint_list ~sep:" and " sprint_media_expression xs in
+        let sprint_media_query = function
+            | `Typed (media_type, None)    -> sprint_media_type media_type
+            | `Typed (media_type, Some xs) -> sprint_media_type media_type ^ " and " ^ sprint_media_expressions xs
+            | `Untyped xs                  -> sprint_media_expressions xs
+        in sprint_list ~sep:", " sprint_media_query xs
 
     and sprint_rule (selectors, declarations) =
         sprintf "%s\n\t{\n%s\t}"

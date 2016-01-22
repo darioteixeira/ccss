@@ -27,6 +27,8 @@ let nelist = function
 %token <string option> FONTFACE
 %token <string option> KEYFRAMES
 
+%token ONLY NOT AND
+
 %token OPEN_CURLY CLOSE_CURLY
 %token OPEN_ROUND CLOSE_ROUND
 %token OPEN_SQUARE CLOSE_SQUARE
@@ -83,8 +85,8 @@ statement:
 
 atrule:
     | CHARSET STRING SEMICOLON                                  {($1, `Charset $2)}
-    | IMPORT source S? media_list? SEMICOLON                    {($1, `Import ($2, $4))}
-    | MEDIA media_list OPEN_CURLY rule+ CLOSE_CURLY             {($1, `Media ($2, $4))}
+    | IMPORT source S? media_query_list? SEMICOLON              {($1, `Import ($2, $4))}
+    | MEDIA media_query_list OPEN_CURLY rule+ CLOSE_CURLY       {($1, `Media ($2, $4))}
     | PAGE pseudo_page? declaration_block                       {($1, `Page ($2, $3))}
     | FONTFACE declaration_block                                {($1, `Fontface $2)}
     | KEYFRAMES IDENT OPEN_CURLY keyframe_block+ CLOSE_CURLY    {($1, `Keyframes ($2, $4))}
@@ -100,10 +102,33 @@ source:
     | STRING                                                    {`String $1}
     | URI STRING CLOSE_ROUND                                    {`Uri $2}
 
-media_list:
-    | separated_nonempty_list(COMMA, medium)                    {$1}
+media_query_list:
+    | separated_nonempty_list(COMMA, media_query)               {$1}
 
-medium:
+media_query:
+    | media_type media_expression_list?                         {`Typed ($1, $2)}
+    | media_expression_nelist                                   {`Untyped $1}
+
+media_type:
+    | media_prefix? IDENT                                       {($1, $2)}
+
+media_prefix:
+    | ONLY                                                      {`Only}
+    | NOT                                                       {`Not}
+
+media_expression_list:
+    | AND separated_nonempty_list(AND, media_expression)        {$2}
+
+media_expression_nelist:
+    | separated_nonempty_list(AND, media_expression)            {$1}
+
+media_expression:
+    | OPEN_ROUND media_feature media_sentence? CLOSE_ROUND      {($2, $3)}
+
+media_sentence:
+    | COLON sentence                                            {$2}
+
+media_feature:
     | IDENT                                                     {$1}
 
 pseudo_page:

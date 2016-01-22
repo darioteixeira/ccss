@@ -27,8 +27,8 @@ and statement =
 
 and atrule =
     [ `Charset of string
-    | `Import of source * medium list option
-    | `Media of medium list * rule list
+    | `Import of source * media_query list option
+    | `Media of media_query list * rule list
     | `Page of pseudo_page option * declaration list
     | `Fontface of declaration list
     | `Keyframes of string * keyframe_block list
@@ -41,7 +41,16 @@ and source =
     | `Uri of string
     ]
 
-and medium = string
+and media_query =
+    [ `Typed of media_type * media_expression list option
+    | `Untyped of media_expression list
+    ]
+
+and media_type = [ `Only | `Not ] option * string
+
+and media_expression = media_feature * sentence option
+
+and media_feature = string
 
 and pseudo_page = string
 
