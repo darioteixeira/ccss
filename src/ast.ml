@@ -17,48 +17,48 @@
 (** {2 Top-level statements}                                                    *)
 (********************************************************************************)
 
-type t = statement_t list
+type t = statement list
 
-and statement_t =
-    [ `Atrule of prefix_t option * atrule_t
-    | `Rule of rule_t
-    | `Vardecl of variable_t * vardecl_t
+and statement =
+    [ `Atrule of prefix option * atrule
+    | `Rule of rule
+    | `Vardecl of variable * vardecl
     ]
 
-and atrule_t =
+and atrule =
     [ `Charset of string
-    | `Import of source_t * medium_t list option
-    | `Media of medium_t list * rule_t list
-    | `Page of pseudo_page_t option * declaration_t list
-    | `Fontface of declaration_t list
-    | `Keyframes of string * keyframe_block_t list
+    | `Import of source * medium list option
+    | `Media of medium list * rule list
+    | `Page of pseudo_page option * declaration list
+    | `Fontface of declaration list
+    | `Keyframes of string * keyframe_block list
     ]
 
-and prefix_t = string
+and prefix = string
 
-and source_t =
+and source =
     [ `String of string
     | `Uri of string
     ]
 
-and medium_t = string
+and medium = string
 
-and pseudo_page_t = string
+and pseudo_page = string
 
-and keyframe_block_t = keyframe_sel_t * declaration_t list
+and keyframe_block = keyframe_sel * declaration list
 
-and keyframe_sel_t =
+and keyframe_sel =
     [ `Ident of string
-    | `Calc of calc_t
+    | `Calc of calc
     ]
 
-and rule_t = selector_t list * declaration_t list
+and rule = selector list * declaration list
 
-and variable_t = Lexing.position * string
+and variable = Lexing.position * string
 
-and vardecl_t =
-    [ `Expr of expression_t
-    | `Mixin of declaration_t list
+and vardecl =
+    [ `Expr of expression
+    | `Mixin of declaration list
     ]
 
 
@@ -66,40 +66,40 @@ and vardecl_t =
 (** {2 Selectors}                                                               *)
 (********************************************************************************)
 
-and selector_t = simplesel_t * (combinator_t * simplesel_t) list
+and selector = simplesel * (combinator * simplesel) list
 
-and simplesel_t =
-    [ `Explicit of element_t * qualifier_t list
-    | `Generic of qualifier_t * qualifier_t list
+and simplesel =
+    [ `Explicit of element * qualifier list
+    | `Generic of qualifier * qualifier list
     ]
 
-and combinator_t =
+and combinator =
     [ `Descendant
     | `General_sibling
     | `Adjacent_sibling
     | `Child
     ]
 
-and element_t =
+and element =
     [ `Tag of string
     | `Universal
     ]
 
-and qualifier_t =
+and qualifier =
     [ `Id of string
     | `Class of string
-    | `Attr of string * attr_t
+    | `Attr of string * attr
     | `Pseudo_class of string
     | `Pseudo_element of string
-    | `Sel_func of string * function_t
+    | `Sel_func of string * func
     ]
 
-and function_t =
-    [ `Qualified of qualifier_t list
+and func =
+    [ `Qualified of qualifier list
     | `Nth of string
     ]
 
-and attr_t =
+and attr =
     [ `Attr_exists
     | `Attr_equals of string
     | `Attr_includes of string
@@ -114,38 +114,38 @@ and attr_t =
 (** {2 Declarations}                                                            *)
 (********************************************************************************)
 
-and declaration_t =
-    [ `Property of property_t * expression_t * important_t
-    | `Varref of variable_t
+and declaration =
+    [ `Property of property * expression * important
+    | `Varref of variable
     ]
 
-and property_t = string
+and property = string
 
-and important_t = bool
+and important = bool
 
-and expression_t = sentence_t list
+and expression = sentence list
 
-and sentence_t = term_t list
+and sentence = term list
 
-and term_t =
-    [ `Calc of calc_t
+and term =
+    [ `Calc of calc
     | `String of string
     | `Ident of string
     | `Uri of string
     | `Hash of string
     | `Urange of string
-    | `Term_func of string * expression_t
+    | `Term_func of string * expression
     | `Slash
     ]
 
-and calc_t =
-    [ `Varref of variable_t
-    | `Quantity of quantity_t
-    | `Sum of Lexing.position * calc_t * calc_t
-    | `Sub of Lexing.position * calc_t * calc_t
-    | `Mul of Lexing.position * calc_t * calc_t
-    | `Div of Lexing.position * calc_t * calc_t
+and calc =
+    [ `Varref of variable
+    | `Quantity of quantity
+    | `Sum of Lexing.position * calc * calc
+    | `Sub of Lexing.position * calc * calc
+    | `Mul of Lexing.position * calc * calc
+    | `Div of Lexing.position * calc * calc
     ]
 
-and quantity_t = float * string option
+and quantity = float * string option
 

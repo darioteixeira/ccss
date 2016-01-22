@@ -52,7 +52,7 @@ let nelist = function
 %token <string> SEL_FUNC
 %token <string> TERM_FUNC
 
-%token <Ast.quantity_t> QUANTITY
+%token <Ast.quantity> QUANTITY
 
 
 (********************************************************************************)
