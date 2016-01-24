@@ -1,9 +1,9 @@
 =========================================================================
-| README for CCSS							|
-|									|
-| http://ccss.forge.ocamlcore.org/					|
-|									|
-| Dario Teixeira (dario.teixeira@yahoo.com)				|
+| README for CCSS                                                       |
+|                                                                       |
+| http://ccss.forge.ocamlcore.org/                                      |
+|                                                                       |
+| Dario Teixeira <dario.teixeira@nleyten.com>                           |
 =========================================================================
 
 
@@ -37,10 +37,10 @@ demonstrates this situation:
 Foo: 20em;
 Bar: 1px solid black;
 
-h1	{
-	width: Foo;
-	border: Bar;
-	}
+h1  {
+    width: Foo;
+    border: Bar;
+    }
 
 
 The second use of variables is to declare mixins, ie, declaration blocks
@@ -48,16 +48,16 @@ that can be included within subsequent declaration blocks.  The code below
 illustrates the use of mixins:
 
 Inverse_scheme:
-	{
-	color: #fff;
-	background: #000;
-	}
+    {
+    color: #fff;
+    background: #000;
+    }
 
 h1
-	{
-	Inverse_scheme;
-	font-weight: bold;
-	}
+    {
+    Inverse_scheme;
+    font-weight: bold;
+    }
 
 
 2.2. Arithmetic
@@ -68,7 +68,7 @@ subtraction, multiplication, and division).  The operands must be CSS
 quantities (either dimensionless or with an attached unit), or other
 expressions that ultimately resolve into a quantity.  Moreover, variables
 whose value is a quantity (or an expression which resolves into a quantity)
-may also be used as operand.
+may also be used as operands.
 
 The operators are '+', '-', '*', and '÷'.  Note that multiplication and
 division have precedence over addition and subtraction, but you may use
@@ -78,19 +78,19 @@ Left: 10em;
 Right: 5em;
 Total: Left + Right;
 
-h1	{
-	padding: (1.5em + 0.5em) * 2;
-	width: 2 * Total;
-	}
+h1  {
+    padding: (1.5em + 0.5em) * 2;
+    width: 2 * Total;
+    }
 
 
 CCSS will produce the following output:
 
 h1
-	{
-	padding: 4em;
-	width: 30em;
-	}
+    {
+    padding: 4em;
+    width: 30em;
+    }
 
 
 The reader will have noticed that CCSS must be unit-aware when performing
@@ -115,13 +115,13 @@ As an illustration of unit conversion, the result for all the following
 arithmetic operations is the same, "2in":
 
 h1
-	{
-	foo1: 1in + 1in;
-	foo2: 1in + 2.54cm;
-	foo3: 1in + 25.4mm;
-	foo4: 1in + 72pt;
-	foo5: 1in + 6pc;
-	}
+    {
+    foo1: 1in + 1in;
+    foo2: 1in + 2.54cm;
+    foo3: 1in + 25.4mm;
+    foo4: 1in + 72pt;
+    foo5: 1in + 6pc;
+    }
 
 
 3. Dependencies
