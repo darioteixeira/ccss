@@ -1,4 +1,4 @@
 _build/
 setup.data
 setup.log
-ccss.native
+*.native
