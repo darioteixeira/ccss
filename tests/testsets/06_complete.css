@@ -1,0 +1,192 @@
+@charset "utf-8";
+
+@import "foo";
+
+@import "foo" print, screen;
+
+@import url("bar");
+
+@import url("bar") print, screen;
+
+@media print, screen
+{
+h1
+	{
+	color: black;
+	}
+}
+
+@page 
+	{
+	margin: 1em;
+	}
+
+@page :left
+	{
+	margin: 1em;
+	}
+
+@font-face
+	{
+		font-family: serif;
+	}
+
+h1
+	{
+	color: black;
+	background: #fff;
+	border: 1px solid black;
+	font-family: "Arial";
+	font: 100% / 1.2;
+	}
+
+#main h1.section > p ~ span + span
+	{
+	color: red;
+	}
+
+#main h1[class]
+	{
+	color: red;
+	}
+
+#main h1[class^="section"]
+	{
+	color: red;
+	}
+
+.doc_par + .doc_par:not(.doc_initial)
+	{
+	text-indent: 1em;
+	}
+
+.doc_par.doc_indent:not(.doc_initial)
+	{
+	text-indent: 2em;
+	}
+
+.doc_par.doc_noindent
+	{
+	text-indent: 0 !important;
+	}
+
+p:nth-child(odd)
+	{
+	color: black;
+	}
+
+p:nth-child(even)
+	{
+	color: black;
+	}
+
+p:nth-child(2n+1)
+	{
+	color: black;
+	}
+
+p:nth-child(2n-1)
+	{
+	color: black;
+	}
+
+p:nth-child(-2n-1)
+	{
+	color: black;
+	}
+
+h1
+	{
+	background: url("image.png") no-repeat;
+	}
+
+h2
+	{
+	background: url("image.png") 0 0 no-repeat;
+	}
+
+h3
+	{
+	background-position: left top;
+	}
+
+h3
+	{
+	background-position: left 1px;
+	}
+
+h3
+	{
+	background-position: 0 -1px;
+	}
+
+h1
+	{
+	width: 30em;
+	}
+
+h1
+	{
+	width: 15em;
+	}
+
+h1
+	{
+	width: 59em;
+	}
+
+h1
+	{
+	width: 60em;
+	}
+
+h1
+	{
+	width: 4em;
+	}
+
+h1
+	{
+	width: 10em;
+	}
+
+h1
+	{
+	width: 10em;
+	}
+
+h1
+	{
+	width: 10em;
+	}
+
+h1
+	{
+	width: 40px;
+	}
+
+h1
+	{
+	width: 50em;
+	}
+
+h1
+	{
+	width: 30em;
+	}
+
+h1
+	{
+	width: 25em;
+	}
+
+h1
+	{
+	width: 110em;
+	}
+
+h1
+	{
+	border: 2px solid black;
+	}
+

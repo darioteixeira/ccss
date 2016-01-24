@@ -1,0 +1,37 @@
+length
+	{
+	foo: 2in;
+	foo: 2in;
+	foo: 2in;
+	foo: 2in;
+	foo: 2in;
+	}
+
+angle
+	{
+	foo: 6.283rad;
+	foo: 360deg;
+	}
+
+time
+	{
+	foo: 1.01s;
+	foo: 1000ms;
+	}
+
+frequency
+	{
+	foo: 1500hz;
+	foo: 0.3khz;
+	}
+
+corner-cases
+	{
+	foo: 2in;
+	foo: 2in;
+	foo: 2in;
+	foo: -2in;
+	foo: 2;
+	foo: 2in;
+	}
+

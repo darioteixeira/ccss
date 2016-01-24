@@ -1,22 +1,37 @@
-OASISFormat:	0.3
-Name:		CCSS
-Version:	1.5
-Synopsis:	Preprocessor for CSS (Cascading Style Sheets)
-Authors:	Dario Teixeira
-Homepage:	http://ccss.forge.ocamlcore.org/
-License:	GPL-2
-Plugins:	META (0.3), DevFiles (0.3)
+OASISFormat:    0.4
+Name:           CCSS
+Version:        1.6
+Synopsis:       Preprocessor for CSS (Cascading Style Sheets)
+Authors:        Dario Teixeira <dario.teixeira@nleyten.com>
+Homepage:       http://ccss.forge.ocamlcore.org/
+License:        GPL-2
+LicenseFile:    LICENSE
+Plugins:        META (0.4), DevFiles (0.4)
+BuildTools:     ocamlbuild, make
 Description:
-  CCSS is a preprocessor for CSS (Cascading Style Sheets), extending the
-  language with arithmetic operations and variables. It includes a fairly
-  complete CSS parser and lexer, and thus other language extensions may be
-  easily added in the future.
+    CCSS is a preprocessor for CSS (Cascading Style Sheets), extending the
+    language with arithmetic operations and variables. It includes a fairly
+    complete CSS parser and lexer, and thus other language extensions may be
+    easily added in the future.
 
 Executable "ccss"
-  Path:			src
-  MainIs:		ccss.ml
-  Install:		true
-  BuildTools:		ocamlbuild, menhir
-  BuildDepends:		batteries, ulex, pcre, menhirLib
-  CompiledObject:	best
+    Path:               src
+    MainIs:             ccss.ml
+    Install:            true
+    BuildTools:         ocamlbuild, menhir
+    BuildDepends:       batteries, ulex, pcre, menhirLib
+    CompiledObject:     best
+
+Executable "test_ccss"
+    Build$:             flag(tests)
+    Path:               tests
+    MainIs:             test_ccss.ml
+    Install:            false
+    BuildDepends:       alcotest, batteries, unix
+    CompiledObject:     best
+
+Test "test_ccss"
+    Run$:               flag(tests)
+    Command:            $test_ccss
+    WorkingDirectory:   tests/testsets
 

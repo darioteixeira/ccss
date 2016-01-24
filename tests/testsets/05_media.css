@@ -1,0 +1,64 @@
+@media screen
+{
+body
+	{
+	background: red;
+	}
+}
+
+@media screen, print
+{
+body
+	{
+	background: red;
+	}
+}
+
+@media (portrait)
+{
+body
+	{
+	background: red;
+	}
+}
+
+@media (portrait), print
+{
+body
+	{
+	background: red;
+	}
+}
+
+@media (max-width: 600px)
+{
+body
+	{
+	background: red;
+	}
+}
+
+@media (max-width: 600px), print
+{
+body
+	{
+	background: red;
+	}
+}
+
+@media screen and (portrait)
+{
+body
+	{
+	background: red;
+	}
+}
+
+@media screen and (portrait) and (max-width: 600px)
+{
+body
+	{
+	background: red;
+	}
+}
+

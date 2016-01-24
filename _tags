@@ -1,8 +1,9 @@
 # OASIS_START
-# DO NOT EDIT (digest: f18fac2e6870f9a5a3bef17055a3698a)
+# DO NOT EDIT (digest: 89ab8a9eb34ee296462a26b0d349e55f)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
+true: annot, bin_annot
 <**/.svn>: -traverse
 <**/.svn>: not_hygienic
 ".bzr": -traverse
@@ -18,10 +19,17 @@
 <src/ccss.{native,byte}>: pkg_menhirLib
 <src/ccss.{native,byte}>: pkg_pcre
 <src/ccss.{native,byte}>: pkg_ulex
-<src/*.ml{,i}>: pkg_batteries
-<src/*.ml{,i}>: pkg_menhirLib
-<src/*.ml{,i}>: pkg_pcre
-<src/*.ml{,i}>: pkg_ulex
+<src/*.ml{,i,y}>: pkg_batteries
+<src/*.ml{,i,y}>: pkg_menhirLib
+<src/*.ml{,i,y}>: pkg_pcre
+<src/*.ml{,i,y}>: pkg_ulex
+# Executable test_ccss
+<tests/test_ccss.{native,byte}>: pkg_alcotest
+<tests/test_ccss.{native,byte}>: pkg_batteries
+<tests/test_ccss.{native,byte}>: pkg_unix
+<tests/*.ml{,i,y}>: pkg_alcotest
+<tests/*.ml{,i,y}>: pkg_batteries
+<tests/*.ml{,i,y}>: pkg_unix
 # OASIS_STOP
 true: use_menhir
 <src/scanner.ml>: pkg_ulex.syntax, syntax_camlp4o

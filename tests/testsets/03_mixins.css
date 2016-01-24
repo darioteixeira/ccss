@@ -1,0 +1,23 @@
+.alpha
+	{
+	display: block;
+	clear: both;
+	content: "";
+	height: 0;
+	visibility: hidden;
+	color: #333;
+	background: #ccc;
+	}
+
+.beta
+	{
+	font-weight: bold;
+	color: #ccc;
+	background: #333;
+	display: block;
+	clear: both;
+	content: "";
+	height: 0;
+	visibility: hidden;
+	}
+
