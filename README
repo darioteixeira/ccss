@@ -127,8 +127,8 @@ h1
 3. Dependencies
 ===============
 
-Menhir is used as the parser generator [1], while scanning is done with Ulex [2].
-Other requirements are Batteries [3] and Pcre-ocaml [4].
+Menhir is used as the parser generator [1], while scanning is done with Sedlex [2].
+Other requirements are Batteries [3] and OCaml-re [4].
 
 
 4. Building and installing
@@ -150,7 +150,7 @@ References
 ==========
 
 [1] http://cristal.inria.fr/~fpottier/menhir/
-[2] http://www.cduce.org/download.html
+[2] https://github.com/alainfrisch/sedlex
 [3] http://batteries.forge.ocamlcore.org/
-[4] http://www.ocaml.info/home/ocaml_sources.html#pcre-ocaml
+[4] https://github.com/ocaml/ocaml-re
 
