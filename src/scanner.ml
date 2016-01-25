@@ -20,21 +20,22 @@ exception Error of string
 (** {1 Regular expressions}                                                     *)
 (********************************************************************************)
 
-let regexp alpha = ['a'-'z']
-let regexp digit = ['0'-'9']
-let regexp hexa = ['0'-'9' 'a'-'f']
-let regexp space = [' ' '\t' '\n']
-let regexp ident = ['a'-'z' '-'] ['A'-'Z' 'a'-'z' '0'-'9' '-' '_']*
-let regexp variable = ['A'-'Z'] ['A'-'Z' 'a'-'z' '0'-'9' '-' '_']*
-let regexp hashed = '#' ['A'-'Z' 'a'-'z' '0'-'9' '-' '_']+
-let regexp urange_hexa = ['0'-'9' 'a'-'f' 'A'-'F']
-let regexp urange_num = (urange_hexa+ '?'* ) | ('?'+)
-let regexp urange = ('u' | 'U') '+' urange_num ('-' urange_num)?
-let regexp number = ('-' | '+')? digit+ ('.' digit+)?
-let regexp units = alpha+ | '%'
-let regexp slc = "//" [^ '\n']+
-let regexp nth = ('-' | '+')? digit+ 'n' ('-' | '+') digit+
-let regexp prefix = '-' alpha+ '-'
+let lower = [%sedlex.regexp? 'a' .. 'z']
+let upper = [%sedlex.regexp? 'A' .. 'Z']
+let digit = [%sedlex.regexp? '0' .. '9']
+let hexa = [%sedlex.regexp? '0' .. '9' | 'a' .. 'f' | 'A' .. 'F']
+let space = [%sedlex.regexp? ' ' | '\t' | '\n']
+let trailing = [%sedlex.regexp? upper | lower | digit | '-' | '_']
+let ident = [%sedlex.regexp? (lower | '-'), Star trailing]
+let variable = [%sedlex.regexp? upper, Star trailing]
+let hashed = [%sedlex.regexp? '#', Plus trailing]
+let urange_num = [%sedlex.regexp? (Plus hexa, Star '?') | Plus '?']
+let urange = [%sedlex.regexp? ('u' | 'U'), '+', urange_num, Opt ('-', urange_num)]
+let number = [%sedlex.regexp? Opt ('-' | '+'), Plus digit, Opt ('.', Plus digit)]
+let units = [%sedlex.regexp? (Plus lower) | '%']
+let slc = [%sedlex.regexp? "//", Plus (Compl '\n')]
+let nth = [%sedlex.regexp? Opt ('-' | '+'), Plus digit, 'n', ('-' | '+'), Plus digit]
+let prefix = [%sedlex.regexp? '-', Plus lower, '-']
 
 
 (********************************************************************************)
@@ -47,12 +48,12 @@ let regexp prefix = '-' alpha+ '-'
 
 let add_lines nlines lexbuf =
     let adder acc el = if el = 10 then acc+1 else acc in
-    let lexeme = Ulexing.lexeme lexbuf
+    let lexeme = Sedlexing.lexeme lexbuf
     in nlines + (Array.fold_left adder 0 lexeme)
 
 
 let trim_lexbuf ?(left = 0) ?(right = 0) lexbuf =
-    Ulexing.utf8_sub_lexeme lexbuf left ((Ulexing.lexeme_length lexbuf) - left - right)
+    Sedlexing.Utf8.sub_lexeme lexbuf left ((Sedlexing.lexeme_length lexbuf) - left - right)
 
 
 let ltrim_lexbuf lexbuf =
@@ -68,7 +69,7 @@ let parse_quantity =
     let alphas = Re.(rep1 (alt [rg 'a' 'z'; rg 'A' 'Z'])) in
     let rex = Re.(compile (seq [group (seq [opt (set "+-"); digits; opt (seq [char '.'; digits])]); opt (group (alt [char '%'; alphas]))])) in
     fun lexbuf ->
-        let groups = Re.exec rex (Ulexing.utf8_lexeme lexbuf) in
+        let groups = Re.exec rex (Sedlexing.Utf8.lexeme lexbuf) in
         let number = Re.get groups 1 in
         let units =
             if Re.test groups 2
@@ -80,7 +81,7 @@ let parse_quantity =
 let parse_prefixed_atrule =
     let rex = Re.(compile (seq [bos; char '@'; opt (seq [char '-'; group (rep1 (rg 'a' 'z')); char '-'])])) in
     fun lexbuf ->
-        let groups = Re.exec rex (Ulexing.utf8_lexeme lexbuf) in
+        let groups = Re.exec rex (Sedlexing.Utf8.lexeme lexbuf) in
         if Re.test groups 1
         then Some (Re.get groups 1)
         else None
@@ -90,70 +91,74 @@ let parse_prefixed_atrule =
 (** {2 Lexers}                                                                  *)
 (********************************************************************************)
 
-let rec main_scanner nlines = lexer
-    | "url("                         -> (nlines, URI)
-    | urange                         -> (nlines, URANGE (Ulexing.utf8_lexeme lexbuf))
-    | ident '('                      -> (nlines, TERM_FUNC (rtrim_lexbuf lexbuf))
-    | ':' ident '('                  -> (nlines, SEL_FUNC (trim_lexbuf ~right:1 ~left:1 lexbuf))
-    | nth                            -> (nlines, NTH (Ulexing.utf8_lexeme lexbuf))
-    | number units?                  -> (nlines, QUANTITY (parse_quantity lexbuf))
-    | space* "only" space*           -> (nlines, ONLY)
-    | space* "not" space*            -> (nlines, NOT)
-    | space* "and" space*            -> (nlines, AND)
-    | ident                          -> (nlines, IDENT (Ulexing.utf8_lexeme lexbuf))
-    | variable                       -> (nlines, VAR (Ulexing.utf8_lexeme lexbuf))
-    | hashed                         -> (nlines, HASH (ltrim_lexbuf lexbuf))
-    | "@" prefix? "charset" space+   -> (add_lines nlines lexbuf, CHARSET (parse_prefixed_atrule lexbuf))
-    | "@" prefix? "import" space+    -> (add_lines nlines lexbuf, IMPORT (parse_prefixed_atrule lexbuf))
-    | "@" prefix? "media" space+     -> (add_lines nlines lexbuf, MEDIA (parse_prefixed_atrule lexbuf))
-    | "@" prefix? "page" space+      -> (add_lines nlines lexbuf, PAGE (parse_prefixed_atrule lexbuf))
-    | "@" prefix? "font-face" space+ -> (add_lines nlines lexbuf, FONTFACE (parse_prefixed_atrule lexbuf))
-    | "@" prefix? "keyframes" space+ -> (add_lines nlines lexbuf, KEYFRAMES (parse_prefixed_atrule lexbuf))
-    | space* "!important" space*     -> (nlines, IMPORTANT)
-    | space* "/*"                    -> comment_scanner nlines lexbuf
-    | space* slc space*              -> main_scanner (add_lines nlines lexbuf) lexbuf
-    | "="                            -> (nlines, ATTR_EQUALS)
-    | "~="                           -> (nlines, ATTR_INCLUDES)
-    | "|="                           -> (nlines, ATTR_DASHMATCH)
-    | "^="                           -> (nlines, ATTR_PREFIX)
-    | "$="                           -> (nlines, ATTR_SUFFIX)
-    | "*="                           -> (nlines, ATTR_SUBSTRING)
-    | space* "::" space*             -> (add_lines nlines lexbuf, DOUBLE_COLON)
-    | space* '*' space*              -> (add_lines nlines lexbuf, ASTERISK)
-    | space* 247 space*              -> (add_lines nlines lexbuf, QUOTIENT)  (* 247 is the decimal Unicode codepoint for the division sign *)
-    | space* '/' space*              -> (add_lines nlines lexbuf, SLASH)
-    | space* '+' space*              -> (add_lines nlines lexbuf, PLUS)
-    | space+ '-' space+              -> (add_lines nlines lexbuf, MINUS)
-    | space* '~' space*              -> (add_lines nlines lexbuf, TILDE)
-    | space* '>' space*              -> (add_lines nlines lexbuf, GT)
-    | space* '{' space*              -> (add_lines nlines lexbuf, OPEN_CURLY)
-    | space* '}' space*              -> (add_lines nlines lexbuf, CLOSE_CURLY)
-    | space* ';' space*              -> (add_lines nlines lexbuf, SEMICOLON)
-    | space* ':' space*              -> (add_lines nlines lexbuf, COLON)
-    | space* ',' space*              -> (add_lines nlines lexbuf, COMMA)
-    | space* '(' space*              -> (add_lines nlines lexbuf, OPEN_ROUND)
-    | space* ')' space*              -> (add_lines nlines lexbuf, CLOSE_ROUND)
-    | '.'                            -> (nlines, PERIOD)
-    | '['                            -> (nlines, OPEN_SQUARE)
-    | ']'                            -> (nlines, CLOSE_SQUARE)
-    | '\''                           -> single_string_scanner nlines "" lexbuf
-    | '"'                            -> double_string_scanner nlines "" lexbuf
-    | space                          -> (add_lines nlines lexbuf, S)
-    | eof                            -> (nlines, EOF)
-    | _                              -> raise (Error (Ulexing.utf8_lexeme lexbuf))
+let rec main_scanner nlines lexbuf = match%sedlex lexbuf with
+    | "url("                                   -> (nlines, URI)
+    | urange                                   -> (nlines, URANGE (Sedlexing.Utf8.lexeme lexbuf))
+    | ident, '('                               -> (nlines, TERM_FUNC (rtrim_lexbuf lexbuf))
+    | ':', ident, '('                          -> (nlines, SEL_FUNC (trim_lexbuf ~right:1 ~left:1 lexbuf))
+    | nth                                      -> (nlines, NTH (Sedlexing.Utf8.lexeme lexbuf))
+    | number, Opt units                        -> (nlines, QUANTITY (parse_quantity lexbuf))
+    | Star space, "only", Star space           -> (nlines, ONLY)
+    | Star space, "not", Star space            -> (nlines, NOT)
+    | Star space, "and", Star space            -> (nlines, AND)
+    | ident                                    -> (nlines, IDENT (Sedlexing.Utf8.lexeme lexbuf))
+    | variable                                 -> (nlines, VAR (Sedlexing.Utf8.lexeme lexbuf))
+    | hashed                                   -> (nlines, HASH (ltrim_lexbuf lexbuf))
+    | "@", Opt prefix, "charset", Plus space   -> (add_lines nlines lexbuf, CHARSET (parse_prefixed_atrule lexbuf))
+    | "@", Opt prefix, "import", Plus space    -> (add_lines nlines lexbuf, IMPORT (parse_prefixed_atrule lexbuf))
+    | "@", Opt prefix, "media", Plus space     -> (add_lines nlines lexbuf, MEDIA (parse_prefixed_atrule lexbuf))
+    | "@", Opt prefix, "page", Plus space      -> (add_lines nlines lexbuf, PAGE (parse_prefixed_atrule lexbuf))
+    | "@", Opt prefix, "font-face", Plus space -> (add_lines nlines lexbuf, FONTFACE (parse_prefixed_atrule lexbuf))
+    | "@", Opt prefix, "keyframes", Plus space -> (add_lines nlines lexbuf, KEYFRAMES (parse_prefixed_atrule lexbuf))
+    | Star space, "!important", Star space     -> (nlines, IMPORTANT)
+    | Star space, "/*"                         -> comment_scanner nlines lexbuf
+    | Star space, slc, Star space              -> main_scanner (add_lines nlines lexbuf) lexbuf
+    | "="                                      -> (nlines, ATTR_EQUALS)
+    | "~="                                     -> (nlines, ATTR_INCLUDES)
+    | "|="                                     -> (nlines, ATTR_DASHMATCH)
+    | "^="                                     -> (nlines, ATTR_PREFIX)
+    | "$="                                     -> (nlines, ATTR_SUFFIX)
+    | "*="                                     -> (nlines, ATTR_SUBSTRING)
+    | Star space, "::", Star space             -> (add_lines nlines lexbuf, DOUBLE_COLON)
+    | Star space, '*', Star space              -> (add_lines nlines lexbuf, ASTERISK)
+    | Star space, 247, Star space              -> (add_lines nlines lexbuf, QUOTIENT)  (* 247 is the decimal Unicode codepoint for the division sign *)
+    | Star space, '/', Star space              -> (add_lines nlines lexbuf, SLASH)
+    | Star space, '+', Star space              -> (add_lines nlines lexbuf, PLUS)
+    | Plus space, '-', Plus space              -> (add_lines nlines lexbuf, MINUS)
+    | Star space, '~', Star space              -> (add_lines nlines lexbuf, TILDE)
+    | Star space, '>', Star space              -> (add_lines nlines lexbuf, GT)
+    | Star space, '{', Star space              -> (add_lines nlines lexbuf, OPEN_CURLY)
+    | Star space, '}', Star space              -> (add_lines nlines lexbuf, CLOSE_CURLY)
+    | Star space, ';', Star space              -> (add_lines nlines lexbuf, SEMICOLON)
+    | Star space, ':', Star space              -> (add_lines nlines lexbuf, COLON)
+    | Star space, ',', Star space              -> (add_lines nlines lexbuf, COMMA)
+    | Star space, '(', Star space              -> (add_lines nlines lexbuf, OPEN_ROUND)
+    | Star space, ')', Star space              -> (add_lines nlines lexbuf, CLOSE_ROUND)
+    | '.'                                      -> (nlines, PERIOD)
+    | '['                                      -> (nlines, OPEN_SQUARE)
+    | ']'                                      -> (nlines, CLOSE_SQUARE)
+    | '\''                                     -> single_string_scanner nlines "" lexbuf
+    | '"'                                      -> double_string_scanner nlines "" lexbuf
+    | space                                    -> (add_lines nlines lexbuf, S)
+    | eof                                      -> (nlines, EOF)
+    | any                                      -> raise (Error (Sedlexing.Utf8.lexeme lexbuf))
+    | _                                        -> assert false
 
 
-and single_string_scanner nlines accum = lexer
+and single_string_scanner nlines accum lexbuf = match%sedlex lexbuf with
     | '\'' -> (nlines, STRING accum)
-    | _    -> single_string_scanner (add_lines nlines lexbuf) (accum ^ (Ulexing.utf8_lexeme lexbuf)) lexbuf
+    | any  -> single_string_scanner (add_lines nlines lexbuf) (accum ^ (Sedlexing.Utf8.lexeme lexbuf)) lexbuf
+    | _    -> assert false
 
 
-and double_string_scanner nlines accum = lexer
+and double_string_scanner nlines accum lexbuf = match%sedlex lexbuf with
     | '"' -> (nlines, STRING accum)
-    | _   -> double_string_scanner (add_lines nlines lexbuf) (accum ^ (Ulexing.utf8_lexeme lexbuf)) lexbuf
+    | any -> double_string_scanner (add_lines nlines lexbuf) (accum ^ (Sedlexing.Utf8.lexeme lexbuf)) lexbuf
+    | _   -> assert false
 
 
-and comment_scanner nlines = lexer
-    | "*/" space* -> main_scanner (add_lines nlines lexbuf) lexbuf
-    | _           -> comment_scanner (add_lines nlines lexbuf) lexbuf
+and comment_scanner nlines lexbuf = match%sedlex lexbuf with
+    | "*/", Star space -> main_scanner (add_lines nlines lexbuf) lexbuf
+    | any              -> comment_scanner (add_lines nlines lexbuf) lexbuf
+    | _                -> assert false
 

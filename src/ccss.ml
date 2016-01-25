@@ -22,7 +22,7 @@ exception Syntax_error of Lexing.position
 (** {1 Functions and values}                                                    *)
 (********************************************************************************)
 
-let menhir_with_ulex menhir_parser lexbuf =
+let menhir_with_sedlex menhir_parser lexbuf =
     let position = ref
         {
         pos_fname = "";
@@ -71,8 +71,8 @@ let string_of_exc convert = function
 let () =
     let convert = Options.parse ()
     in try
-        let lexbuf = Ulexing.from_utf8_channel stdin in
-        let css = menhir_with_ulex Parser.stylesheet lexbuf in
+        let lexbuf = Sedlexing.Utf8.from_channel stdin in
+        let css = menhir_with_sedlex Parser.stylesheet lexbuf in
         let out = Printer.sprint convert css
         in print_string out
     with exc ->
