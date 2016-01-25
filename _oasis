@@ -19,7 +19,7 @@ Executable "ccss"
     MainIs:             ccss.ml
     Install:            true
     BuildTools:         ocamlbuild, menhir
-    BuildDepends:       batteries, ulex, pcre, menhirLib
+    BuildDepends:       batteries, ulex, re, menhirLib
     CompiledObject:     best
 
 Executable "test_ccss"

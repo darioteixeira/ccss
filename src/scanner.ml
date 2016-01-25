@@ -64,18 +64,26 @@ let rtrim_lexbuf lexbuf =
 
 
 let parse_quantity =
-    let rex = Pcre.regexp "(?<number>(\\+|-)?[0-9]+(\\.[0-9]+)?)(?<units>%|[A-Za-z]+)?"
-    in fun lexbuf ->
-        let subs = Pcre.exec ~rex (Ulexing.utf8_lexeme lexbuf) in
-        let number = Pcre.get_named_substring rex "number" subs
-        and units = try Some (Pcre.get_named_substring rex "units" subs) with Not_found -> None
-        in (float_of_string number, units)
+    let digits = Re.(rep1 (rg '0' '9')) in
+    let alphas = Re.(rep1 (alt [rg 'a' 'z'; rg 'A' 'Z'])) in
+    let rex = Re.(compile (seq [group (seq [opt (set "+-"); digits; opt (seq [char '.'; digits])]); opt (group (alt [char '%'; alphas]))])) in
+    fun lexbuf ->
+        let groups = Re.exec rex (Ulexing.utf8_lexeme lexbuf) in
+        let number = Re.get groups 1 in
+        let units =
+            if Re.test groups 2
+            then Some (Re.get groups 2)
+            else None in
+        (float_of_string number, units)
+
 
 let parse_prefixed_atrule =
-    let rex = Pcre.regexp "^@(-(?<prefix>[a-z]+)-)?" in
+    let rex = Re.(compile (seq [bos; char '@'; opt (seq [char '-'; group (rep1 (rg 'a' 'z')); char '-'])])) in
     fun lexbuf ->
-        let subs = Pcre.exec ~rex (Ulexing.utf8_lexeme lexbuf) in
-        try Some (Pcre.get_named_substring rex "prefix" subs) with Not_found -> None
+        let groups = Re.exec rex (Ulexing.utf8_lexeme lexbuf) in
+        if Re.test groups 1
+        then Some (Re.get groups 1)
+        else None
 
 
 (********************************************************************************)
