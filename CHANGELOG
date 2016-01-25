@@ -1,4 +1,13 @@
 -------------------------
+(2016-01-25) version 1.6:
+
+  * Better support for complex media queries.
+  * Add unit tests based on Alcotest.
+  * Migrate from OCaml-pcre to OCaml-re.
+  * Migrate from Ulex to Sedlex.
+  * Drop '_t' suffix from types internally.
+
+-------------------------
 (2014-05-21) version 1.5:
 
   * Support for @keyframes (CSS animations).
