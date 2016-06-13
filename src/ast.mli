@@ -105,6 +105,7 @@ and qualifier =
 
 and func =
     [ `Qualified of qualifier list
+    | `Quantity of quantity
     | `Nth of string
     ]
 

@@ -225,8 +225,9 @@ let sprint convert stylesheet =
         | `Sel_func (str, args) -> sprintf ":%s(%s)" str (sprint_function args)
 
     and sprint_function = function
-        | `Qualified qualifiers -> sprint_list sprint_qualifier qualifiers
-        | `Nth str              -> str
+        | `Qualified qualifiers  -> sprint_list sprint_qualifier qualifiers
+        | `Quantity (num, units) -> (sprintf "%.4g" num) ^ (match units with Some s -> s | None -> "")
+        | `Nth str               -> str
 
     and sprint_attr = function
         | `Attr_exists      -> ""

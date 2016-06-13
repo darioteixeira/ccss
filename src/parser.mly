@@ -181,6 +181,7 @@ function_args:
     | qualifier+                                    {`Qualified $1}
     | NTH                                           {`Nth $1}
     | IDENT                                         {`Nth $1}
+    | QUANTITY                                      {`Quantity $1}
 
 attr_operation:
     | (* empty *)                                   {`Attr_exists}
