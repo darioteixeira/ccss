@@ -6856,9 +6856,9 @@ let setup_t =
             OASISLicense.DEP5License
               (OASISLicense.DEP5Unit
                  {
-                    OASISLicense.license = "GPL";
+                    OASISLicense.license = "LGPL";
                     excption = None;
-                    version = OASISLicense.Version "2"
+                    version = OASISLicense.Version "2.1"
                  });
           license_file = Some "LICENSE";
           copyrights = [];

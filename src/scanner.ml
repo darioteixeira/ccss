@@ -1,8 +1,10 @@
 (********************************************************************************)
 (*  Scanner.ml
-    Copyright (c) 2010-2016 Dario Teixeira <dario.teixeira@nleyten.com>
-    This software is distributed under the terms of the GNU GPL version 2.
-    See LICENSE file for full license text.
+    Copyright (c) 2010-2022 Dario Teixeira <dario.teixeira@nleyten.com>
+    This library is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Lesser General Public License
+    version 2.1 as published by the Free Software Foundation, with the
+    special exception on linking described in the LICENSE file.
 *)
 (********************************************************************************)
 
