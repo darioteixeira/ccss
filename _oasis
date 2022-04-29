@@ -4,7 +4,7 @@ Version:        1.6
 Synopsis:       Preprocessor for CSS (Cascading Style Sheets)
 Authors:        Dario Teixeira <dario.teixeira@nleyten.com>
 Homepage:       http://ccss.forge.ocamlcore.org/
-License:        GPL-2
+License:        LGPL-2.1
 LicenseFile:    LICENSE
 Plugins:        META (0.4), DevFiles (0.4)
 BuildTools:     ocamlbuild, make
