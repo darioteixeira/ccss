@@ -2,7 +2,7 @@ OASISFormat:    0.4
 Name:           CCSS
 Version:        1.6
 Synopsis:       Preprocessor for CSS (Cascading Style Sheets)
-Authors:        Dario Teixeira <dario.teixeira@nleyten.com>
+Authors:        Dario Teixeira <dario.teixeira@yahoo.com>
 Homepage:       http://ccss.forge.ocamlcore.org/
 License:        LGPL-2.1
 LicenseFile:    LICENSE
